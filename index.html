@@ -1,0 +1,3066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LotoLoco — Game Design Playground</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --pink: #E91E63; --orange: #FF6F00; --turquoise: #00BCD4;
+    --gold: #FFB300; --purple: #7B1FA2; --dark: #1A1A2E;
+    --darker: #12121F; --card-bg: #2A2A40; --success: #4CAF50;
+    --marigold: #FFD54F; --surface: #252538; --red: #C62828;
+  }
+  body { font-family: system-ui, -apple-system, sans-serif; background: var(--darker); color: #eee; min-height: 100vh; overflow: hidden; }
+
+  /* Header + Tabs */
+  .header { background: var(--dark); padding: 10px 24px 0; border-bottom: 3px solid var(--pink); display: flex; flex-direction: column; }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+  .header h1 { font-size: 28px; color: var(--pink); letter-spacing: 2px; }
+  .header .subtitle { color: #888; font-size: 14px; }
+  .tabs { display: flex; gap: 2px; overflow-x: auto; }
+  .tab { padding: 8px 16px; background: var(--surface); color: #888; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; letter-spacing: 0.5px; white-space: nowrap; }
+  .tab:hover { color: #ccc; background: #2F2F48; }
+  .tab.active { background: var(--darker); color: var(--pink); border-top: 2px solid var(--pink); }
+
+  /* Tab content */
+  .tab-content { display: none; height: calc(100vh - 80px); }
+  .tab-content.active { display: flex; }
+
+  /* ═══════════════════════════════════════════ */
+  /* OVERVIEW TAB                                */
+  /* ═══════════════════════════════════════════ */
+  .overview { flex: 1; overflow-y: auto; padding: 0; }
+  .overview-inner { max-width: 1200px; margin: 0 auto; padding: 32px 40px 60px; }
+
+  .hero { text-align: center; margin-bottom: 48px; padding: 40px 0; }
+  .hero h2 { font-size: 48px; color: var(--pink); letter-spacing: 4px; margin-bottom: 8px; }
+  .hero .tagline { font-size: 22px; color: var(--gold); margin-bottom: 12px; }
+  .hero .desc { font-size: 16px; color: #999; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+  .hero-badges { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
+  .badge { background: var(--surface); border: 1px solid #444; padding: 6px 16px; border-radius: 20px; font-size: 12px; color: #aaa; }
+  .badge strong { color: var(--turquoise); }
+
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 3px; color: var(--turquoise); margin-bottom: 20px; font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid #333; }
+
+  /* Feature cards */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+  .feature-card { background: var(--dark); border: 1px solid #333; border-radius: 12px; padding: 20px; transition: all 0.2s; border-left: 3px solid var(--pink); }
+  .feature-card:hover { border-color: #555; transform: translateY(-2px); }
+  .feature-card .fc-icon { font-size: 28px; margin-bottom: 8px; }
+  .feature-card h3 { font-size: 18px; color: #fff; margin-bottom: 6px; }
+  .feature-card p { font-size: 13px; color: #999; line-height: 1.5; }
+  .feature-card.turq { border-left-color: var(--turquoise); }
+  .feature-card.gold { border-left-color: var(--gold); }
+  .feature-card.orange { border-left-color: var(--orange); }
+  .feature-card.purple { border-left-color: var(--purple); }
+  .feature-card.green { border-left-color: var(--success); }
+
+  /* Data tables */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; padding: 8px 12px; color: var(--turquoise); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #333; background: var(--dark); }
+  .data-table td { padding: 8px 12px; border-bottom: 1px solid #222; color: #ccc; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .data-table .num { text-align: right; color: var(--gold); font-weight: 600; font-family: 'SF Mono', monospace; }
+  .data-table .highlight { color: var(--pink); font-weight: 600; }
+
+  /* World cards */
+  .world-cards { display: flex; flex-direction: column; gap: 12px; }
+  .world-card { display: flex; gap: 20px; background: var(--dark); border-radius: 12px; padding: 16px 20px; border: 1px solid #333; }
+  .world-card .wc-num { font-size: 32px; font-weight: 900; color: var(--pink); min-width: 40px; opacity: 0.6; }
+  .world-card .wc-body { flex: 1; }
+  .world-card h4 { font-size: 16px; margin-bottom: 4px; }
+  .world-card .wc-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
+  .world-card .wc-meta span { display: inline-block; background: var(--surface); padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+  .world-card p { font-size: 13px; color: #999; line-height: 1.4; }
+  .world-card:nth-child(1) h4 { color: var(--gold); }
+  .world-card:nth-child(2) h4 { color: var(--turquoise); }
+  .world-card:nth-child(3) h4 { color: var(--orange); }
+  .world-card:nth-child(4) h4 { color: var(--pink); }
+  .world-card:nth-child(5) h4 { color: var(--purple); }
+
+  /* Economy flow */
+  .econ-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .econ-card { background: var(--dark); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #333; }
+  .econ-card .ec-icon { font-size: 36px; margin-bottom: 8px; }
+  .econ-card h4 { font-size: 18px; margin-bottom: 4px; }
+  .econ-card .ec-role { font-size: 12px; color: #888; margin-bottom: 10px; }
+  .econ-card .ec-detail { font-size: 12px; color: #aaa; text-align: left; line-height: 1.6; }
+  .econ-card:nth-child(1) h4 { color: var(--turquoise); }
+  .econ-card:nth-child(2) h4 { color: var(--gold); }
+  .econ-card:nth-child(3) h4 { color: var(--purple); }
+
+  .callout { background: var(--dark); border-left: 3px solid var(--gold); padding: 14px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .callout strong { color: var(--gold); }
+  .callout p { font-size: 13px; color: #aaa; line-height: 1.5; }
+  .callout.pink { border-left-color: var(--pink); }
+  .callout.pink strong { color: var(--pink); }
+  .callout.turq { border-left-color: var(--turquoise); }
+  .callout.turq strong { color: var(--turquoise); }
+  .callout.green { border-left-color: var(--success); }
+  .callout.green strong { color: var(--success); }
+  .callout.orange { border-left-color: var(--orange); }
+  .callout.orange strong { color: var(--orange); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.purple strong { color: var(--purple); }
+
+  /* Mini stat row */
+  .mini-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .mini-stat { background: var(--surface); padding: 8px 16px; border-radius: 8px; font-size: 13px; }
+  .mini-stat .ms-val { color: var(--gold); font-weight: 700; font-size: 18px; display: block; }
+  .mini-stat .ms-label { color: #888; font-size: 11px; }
+
+  /* ═══════════════════════════════════════════ */
+  /* NEW TABS STYLES                             */
+  /* ═══════════════════════════════════════════ */
+
+  /* Flow diagram */
+  .flow-diagram { background: var(--dark); border: 1px solid #333; border-radius: 12px; padding: 24px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 13px; line-height: 1.8; color: #aaa; white-space: pre; overflow-x: auto; margin-bottom: 16px; }
+  .flow-diagram .flow-pink { color: var(--pink); font-weight: 700; }
+  .flow-diagram .flow-gold { color: var(--gold); font-weight: 700; }
+  .flow-diagram .flow-turq { color: var(--turquoise); font-weight: 700; }
+  .flow-diagram .flow-purple { color: var(--purple); font-weight: 700; }
+  .flow-diagram .flow-arrow { color: #666; }
+
+  /* Bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .bar-row { display: flex; align-items: center; gap: 12px; }
+  .bar-label { min-width: 80px; font-size: 12px; color: #ccc; text-align: right; }
+  .bar-track { flex: 1; height: 24px; background: var(--surface); border-radius: 4px; display: flex; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; transition: width 0.3s; }
+  .bar-fill.positive { background: linear-gradient(90deg, var(--success), var(--turquoise)); }
+  .bar-fill.blocker { background: linear-gradient(90deg, var(--red), #E53935); }
+  .bar-val { min-width: 50px; font-size: 11px; color: #888; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 40px; margin: 24px 0; }
+  .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #333; }
+  .timeline-item { position: relative; margin-bottom: 20px; }
+  .timeline-item::before { content: ''; position: absolute; left: -29px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--pink); border: 2px solid var(--darker); }
+  .timeline-item.turq::before { background: var(--turquoise); }
+  .timeline-item.gold::before { background: var(--gold); }
+  .timeline-item.green::before { background: var(--success); }
+  .timeline-item.purple::before { background: var(--purple); }
+  .timeline-time { font-size: 11px; color: var(--turquoise); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .timeline-title { font-size: 15px; color: #fff; font-weight: 600; margin-bottom: 4px; }
+  .timeline-desc { font-size: 13px; color: #999; line-height: 1.4; }
+
+  /* Architecture boxes */
+  .arch-diagram { display: flex; gap: 24px; align-items: flex-start; justify-content: center; flex-wrap: wrap; margin: 24px 0; }
+  .arch-box { background: var(--dark); border: 2px solid #444; border-radius: 12px; padding: 20px; min-width: 220px; text-align: center; }
+  .arch-box h4 { font-size: 16px; margin-bottom: 8px; }
+  .arch-box ul { list-style: none; text-align: left; font-size: 12px; color: #aaa; line-height: 1.8; }
+  .arch-box ul li::before { content: '\2022 '; color: var(--turquoise); }
+  .arch-box.client { border-color: var(--turquoise); }
+  .arch-box.client h4 { color: var(--turquoise); }
+  .arch-box.server { border-color: var(--pink); }
+  .arch-box.server h4 { color: var(--pink); }
+  .arch-box.baas { border-color: var(--gold); }
+  .arch-box.baas h4 { color: var(--gold); }
+  .arch-arrow { font-size: 28px; color: #555; display: flex; align-items: center; padding-top: 20px; }
+
+  /* Sub-section title */
+  .sub-title { font-size: 16px; color: #fff; font-weight: 700; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px dashed #333; }
+  .sub-title:first-child { margin-top: 0; }
+
+  /* Status indicator */
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .status.done { background: rgba(76,175,80,0.15); color: var(--success); }
+  .status.partial { background: rgba(255,179,0,0.15); color: var(--gold); }
+  .status.missing { background: rgba(198,40,40,0.15); color: #EF5350; }
+
+  /* ═══════════════════════════════════════════ */
+  /* PLAYGROUND TAB (existing)                   */
+  /* ═══════════════════════════════════════════ */
+  .main { display: flex; height: 100%; }
+  .controls { width: 280px; min-width: 280px; background: var(--dark); padding: 16px; overflow-y: auto; border-right: 1px solid #333; }
+  .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 16px; overflow-y: auto; }
+
+  .control-group { margin-bottom: 16px; }
+  .control-group label { display: block; font-size: 11px; text-transform: uppercase; color: var(--turquoise); letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
+  .control-group select, .control-group input[type="range"] { width: 100%; background: var(--surface); color: #eee; border: 1px solid #444; border-radius: 4px; padding: 6px 8px; font-size: 13px; }
+  .control-group input[type="range"] { padding: 0; height: 6px; -webkit-appearance: none; appearance: none; border: none; border-radius: 3px; cursor: pointer; }
+  .control-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--pink); cursor: pointer; }
+  .range-val { float: right; color: var(--gold); font-size: 12px; font-weight: 600; }
+  .divider { border: none; border-top: 1px solid #333; margin: 12px 0; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .preset-btn { background: var(--surface); border: 1px solid #444; color: #ccc; padding: 4px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+  .preset-btn:hover, .preset-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+
+  .stats-bar { display: flex; gap: 16px; align-items: center; background: var(--dark); padding: 10px 20px; border-radius: 10px; min-width: 680px; flex-wrap: wrap; }
+  .stat { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
+  .stat .icon { font-size: 18px; }
+  .stat .val { color: var(--gold); font-size: 16px; }
+  .stat.spins .val { color: var(--turquoise); }
+  .stat.score .val { color: var(--pink); }
+  .stars { display: flex; gap: 2px; }
+  .stars .star { font-size: 20px; color: #444; transition: color 0.3s; }
+  .stars .star.earned { color: var(--gold); }
+
+  .reels-container { display: flex; gap: 8px; background: var(--dark); padding: 12px; border-radius: 12px; border: 2px solid #333; min-height: 90px; align-items: center; }
+  .reel { width: 110px; height: 70px; background: var(--surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #888; border: 2px solid transparent; transition: all 0.3s; overflow: hidden; position: relative; }
+  .reel.spinning { border-color: var(--turquoise); animation: reelSpin 0.15s infinite; }
+  .reel.matched { border-color: var(--success); background: #1B3A1B; color: var(--success); }
+  .reel.wild { border-color: var(--gold); background: #3A3200; color: var(--gold); }
+  .reel.blocker { border-color: var(--red); background: #3A1010; color: #EF5350; }
+  .reel.freespin { border-color: var(--turquoise); background: #0A2A2A; color: var(--turquoise); }
+  .reel.no-match { border-color: #555; color: #666; }
+  @keyframes reelSpin { 0%{transform:translateY(-2px)} 50%{transform:translateY(2px)} 100%{transform:translateY(-2px)} }
+
+  .board { display: grid; gap: 4px; background: var(--dark); padding: 10px; border-radius: 12px; border: 2px solid #333; }
+  .board.size-5 { grid-template-columns: repeat(5, 110px); }
+  .board.size-6 { grid-template-columns: repeat(6, 95px); }
+  .cell { height: 64px; background: var(--card-bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; text-align: center; padding: 4px; border: 2px solid transparent; transition: all 0.3s; cursor: default; position: relative; line-height: 1.2; color: #ccc; }
+  .cell.marked { background: #1B3A1B; border-color: var(--success); color: var(--success); }
+  .cell.marked::after { content: "\2713"; position: absolute; top: 2px; right: 4px; font-size: 14px; color: var(--success); font-weight: bold; }
+  .cell.just-matched { animation: matchPulse 0.5s ease-out; border-color: var(--gold); }
+  .cell.loco-cell { animation: locoPulse 0.8s ease-out; border-color: var(--pink); }
+  .cell.wild-target { border-color: var(--gold); cursor: pointer; animation: wildGlow 0.6s infinite alternate; }
+  .cell.wild-target:hover { background: #3A3200; }
+  .cell.locked::before { content: "\1F512"; position: absolute; top: 2px; left: 4px; font-size: 10px; }
+  .cell.locked.cracked::before { content: "\1F4A5"; }
+  .cell.multiplier::before { content: "x2"; position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: var(--orange); font-weight: bold; background: rgba(255,111,0,0.15); padding: 0 3px; border-radius: 3px; }
+  @keyframes matchPulse { 0%{transform:scale(1.15);box-shadow:0 0 20px rgba(76,175,80,0.5)} 100%{transform:scale(1);box-shadow:none} }
+  @keyframes locoPulse { 0%{transform:scale(1.1);box-shadow:0 0 25px rgba(233,30,99,0.6)} 50%{box-shadow:0 0 15px rgba(233,30,99,0.3)} 100%{transform:scale(1);box-shadow:none} }
+  @keyframes wildGlow { from{box-shadow:0 0 8px rgba(255,179,0,0.4)} to{box-shadow:0 0 18px rgba(255,179,0,0.7)} }
+
+  .col-headers { display: flex; gap: 4px; padding: 0 10px; }
+  .col-header { width: 110px; text-align: center; font-size: 18px; font-weight: 800; color: var(--pink); letter-spacing: 2px; }
+  .col-headers.size-6 .col-header { width: 95px; }
+
+  .spin-btn { background: linear-gradient(135deg, var(--pink), var(--orange)); color: white; border: none; padding: 14px 48px; font-size: 20px; font-weight: 700; border-radius: 30px; cursor: pointer; letter-spacing: 2px; transition: all 0.2s; text-transform: uppercase; }
+  .spin-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 4px 20px rgba(233,30,99,0.4); }
+  .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .spin-btn.spinning { animation: btnPulse 0.3s infinite alternate; }
+  @keyframes btnPulse { from{box-shadow:0 0 10px rgba(233,30,99,0.3)} to{box-shadow:0 0 25px rgba(233,30,99,0.6)} }
+  .new-game-btn { background: var(--surface); color: var(--turquoise); border: 1px solid var(--turquoise); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .new-game-btn:hover { background: var(--turquoise); color: var(--dark); }
+
+  .loco-banner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 72px; font-weight: 900; color: var(--pink); text-shadow: 0 0 40px rgba(233,30,99,0.8), 0 0 80px rgba(233,30,99,0.4); z-index: 100; pointer-events: none; letter-spacing: 8px; }
+  .loco-banner.show { animation: locoAppear 1.2s ease-out forwards; }
+  @keyframes locoAppear { 0%{transform:translate(-50%,-50%) scale(0) rotate(-10deg);opacity:0} 30%{transform:translate(-50%,-50%) scale(1.3) rotate(5deg);opacity:1} 60%{transform:translate(-50%,-50%) scale(1) rotate(0deg);opacity:1} 100%{transform:translate(-50%,-50%) scale(0.8);opacity:0} }
+
+  .game-over { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+  .game-over.show { display: flex; }
+  .game-over h2 { font-size: 48px; color: var(--gold); }
+  .game-over .final-score { font-size: 24px; color: #ccc; }
+  .game-over .final-stars { font-size: 40px; }
+
+  .prompt-section { position: fixed; bottom: 0; left: 0; right: 0; background: var(--dark); border-top: 1px solid #333; padding: 10px 24px; display: flex; align-items: center; gap: 12px; z-index: 50; }
+  .prompt-text { flex: 1; font-size: 12px; color: #999; font-family: 'SF Mono', 'Consolas', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .copy-btn { background: var(--surface); color: var(--turquoise); border: 1px solid #444; padding: 4px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+  .copy-btn:hover { background: var(--turquoise); color: var(--dark); }
+
+  .log { position: fixed; bottom: 40px; right: 16px; width: 280px; max-height: 200px; overflow-y: auto; background: var(--dark); border: 1px solid #333; border-radius: 8px; padding: 8px; font-size: 11px; font-family: monospace; z-index: 50; }
+  .log-entry { padding: 2px 0; border-bottom: 1px solid #222; color: #888; }
+  .log-entry.match { color: var(--success); }
+  .log-entry.wild { color: var(--gold); }
+  .log-entry.loco { color: var(--pink); font-weight: bold; }
+  .log-entry.blocker { color: #EF5350; }
+  .log-entry.freespin { color: var(--turquoise); }
+
+  /* ═══════════════════════════════════════════ */
+  /* ECONOMY SIMULATOR TAB                       */
+  /* ═══════════════════════════════════════════ */
+  .econsim { flex: 1; display: flex; overflow: hidden; }
+  .econsim-controls { width: 340px; min-width: 340px; background: var(--dark); border-right: 1px solid #333; overflow-y: auto; padding: 20px; }
+  .econsim-results { flex: 1; overflow-y: auto; padding: 24px 32px 60px; }
+
+  .es-section { margin-bottom: 20px; }
+  .es-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--turquoise); margin-bottom: 10px; font-weight: 700; padding-bottom: 6px; border-bottom: 1px solid #333; }
+
+  .es-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+  .es-toggle-row label { font-size: 13px; color: #ccc; }
+  .es-toggle { position: relative; width: 40px; height: 22px; cursor: pointer; }
+  .es-toggle input { opacity: 0; width: 0; height: 0; }
+  .es-toggle .slider { position: absolute; inset: 0; background: #444; border-radius: 11px; transition: 0.2s; }
+  .es-toggle .slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #888; border-radius: 50%; transition: 0.2s; }
+  .es-toggle input:checked + .slider { background: var(--turquoise); }
+  .es-toggle input:checked + .slider::before { transform: translateX(18px); background: #fff; }
+
+  .es-param { margin-bottom: 10px; }
+  .es-param-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .es-param-header label { font-size: 12px; color: #aaa; }
+  .es-param-header .es-val { font-size: 12px; color: var(--gold); font-family: 'SF Mono', monospace; min-width: 50px; text-align: right; }
+  .es-param input[type="range"] { width: 100%; height: 4px; -webkit-appearance: none; appearance: none; background: #444; border-radius: 2px; outline: none; }
+  .es-param input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--turquoise); cursor: pointer; }
+  .es-param input[type="number"] { width: 100%; background: var(--surface); border: 1px solid #444; color: #eee; padding: 6px 10px; border-radius: 6px; font-size: 13px; font-family: 'SF Mono', monospace; }
+  .es-param input[type="number"]:focus { border-color: var(--turquoise); outline: none; }
+
+  .es-run-btn { width: 100%; padding: 12px; background: var(--pink); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; transition: 0.2s; margin-top: 10px; }
+  .es-run-btn:hover { background: #C2185B; transform: translateY(-1px); }
+
+  .es-card { background: var(--dark); border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .es-card h3 { font-size: 16px; color: var(--pink); margin-bottom: 12px; }
+  .es-card.turq h3 { color: var(--turquoise); }
+  .es-card.gold h3 { color: var(--gold); }
+  .es-card.green h3 { color: var(--success); }
+
+  .es-metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .es-metric { background: var(--surface); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid #333; }
+  .es-metric .es-m-value { font-size: 28px; font-weight: 800; font-family: 'SF Mono', monospace; }
+  .es-metric .es-m-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .es-metric.pink .es-m-value { color: var(--pink); }
+  .es-metric.turq .es-m-value { color: var(--turquoise); }
+  .es-metric.gold .es-m-value { color: var(--gold); }
+  .es-metric.green .es-m-value { color: var(--success); }
+  .es-metric.purple .es-m-value { color: var(--purple); }
+  .es-metric.red .es-m-value { color: var(--red); }
+
+  .es-chart-wrap { position: relative; width: 100%; height: 280px; margin: 12px 0; }
+  .es-chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+  .es-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .es-table th { text-align: left; padding: 6px 10px; color: var(--turquoise); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #333; background: var(--surface); }
+  .es-table td { padding: 6px 10px; border-bottom: 1px solid #222; color: #ccc; }
+  .es-table .num { text-align: right; color: var(--gold); font-family: 'SF Mono', monospace; font-weight: 600; }
+  .es-table .warn { color: var(--red); }
+  .es-table .ok { color: var(--success); }
+
+  .es-health-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .es-health-track { flex: 1; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
+  .es-health-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+  .es-health-label { font-size: 11px; color: #888; min-width: 120px; }
+  .es-health-val { font-size: 11px; color: var(--gold); font-family: monospace; min-width: 60px; text-align: right; }
+
+  .es-preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .es-preset { padding: 5px 12px; background: var(--surface); color: #aaa; border: 1px solid #444; border-radius: 16px; cursor: pointer; font-size: 11px; font-weight: 600; transition: 0.2s; }
+  .es-preset:hover { border-color: var(--pink); color: #eee; }
+  .es-preset.active { background: var(--pink); color: #fff; border-color: var(--pink); }
+</style>
+</head>
+<body>
+
+<!-- HEADER + TABS -->
+<div class="header">
+  <div class="header-top">
+    <h1>LOTOLOCO</h1>
+    <span class="subtitle">Game Design Playground</span>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')">Core Features</button>
+    <button class="tab" onclick="switchTab('economy')">Economy &amp; Store</button>
+    <button class="tab" onclick="switchTab('levels')">Level Design</button>
+    <button class="tab" onclick="switchTab('engagement')">Engagement Systems</button>
+    <button class="tab" onclick="switchTab('ftue')">FTUE &amp; Onboarding</button>
+    <button class="tab" onclick="switchTab('technical')">Technical Architecture</button>
+    <button class="tab" onclick="switchTab('playground')">Play the Game</button>
+    <button class="tab" onclick="switchTab('econsim')">Economy Simulator</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 1: CORE FEATURES OVERVIEW              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-overview">
+  <div class="overview">
+    <div class="overview-inner">
+
+      <!-- Hero -->
+      <div class="hero">
+        <h2>LOTOLOCO</h2>
+        <div class="tagline">Slingo meets Mexican Loteria</div>
+        <p>A slot-machine bingo hybrid that fuses classic Slingo spinning mechanics with the 54-card Mexican Loteria deck, wrapped in a stylized Coco-inspired fiesta art direction. 150 levels across 5 themed worlds, server-authoritative architecture, ethical F2P monetisation.</p>
+        <div class="hero-badges">
+          <div class="badge"><strong>Unity 2D</strong> (URP)</div>
+          <div class="badge"><strong>PlayFab</strong> CloudScript</div>
+          <div class="badge"><strong>iOS</strong> + <strong>Android</strong></div>
+          <div class="badge"><strong>54</strong> Loteria Cards</div>
+          <div class="badge"><strong>150</strong> Levels</div>
+          <div class="badge"><strong>35</strong> Server Handlers</div>
+        </div>
+      </div>
+
+      <!-- Core Loop -->
+      <div class="section">
+        <div class="section-title">Core Gameplay Loop</div>
+        <div class="feature-grid">
+          <div class="feature-card gold">
+            <div class="fc-icon">&#127903;</div>
+            <h3>1. Spend a Ticket</h3>
+            <p>Each level costs 1 ticket to enter. Tickets regenerate 1 every 2 hours (max 5). This energy gate creates natural session breaks and return-visit motivation.</p>
+          </div>
+          <div class="feature-card turq">
+            <div class="fc-icon">&#127920;</div>
+            <h3>2. Spin the Reels</h3>
+            <p>5 classic slot reels (6 for larger boards) spin and stop left-to-right with cascade timing. Each reel reveals a Loteria card or special symbol from that column's card range.</p>
+          </div>
+          <div class="feature-card green">
+            <div class="fc-icon">&#9989;</div>
+            <h3>3. Match &amp; Daub</h3>
+            <p>If a reel result matches a card on your board, it's automatically daubed. Each match scores 50 points. The server validates all matches — no client-side cheating.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">&#127881;</div>
+            <h3>4. Complete LOCOs</h3>
+            <p>Complete a full row, column, or diagonal for a LOCO — worth 1,000 points each. Clear the entire board for a 5,000-point jackpot bonus.</p>
+          </div>
+          <div class="feature-card purple">
+            <div class="fc-icon">&#11088;</div>
+            <h3>5. Earn Stars &amp; Coins</h3>
+            <p>Your final score determines your star rating (1-3 stars). Stars unlock coin bonuses. Coins buy power-ups and extra spins for future levels.</p>
+          </div>
+          <div class="feature-card orange">
+            <div class="fc-icon">&#128506;</div>
+            <h3>6. Progress on the Map</h3>
+            <p>Return to the World Map with your next level unlocked. Journey from El Mercado through La Playa, El Pueblo, La Fiesta, to the celestial El Cielo.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Special Symbols -->
+      <div class="section">
+        <div class="section-title">Special Reel Symbols</div>
+        <div class="feature-grid">
+          <div class="feature-card gold">
+            <div class="fc-icon">&#127183;</div>
+            <h3>El Comodin — Column Wild</h3>
+            <p>Player chooses any unmarked card in that column to daub. The strategic choice: complete a near-LOCO row, or set up for a future diagonal?</p>
+          </div>
+          <div class="feature-card gold">
+            <div class="fc-icon">&#9728;&#65039;</div>
+            <h3>El Sol Dorado — Board Wild</h3>
+            <p>The most powerful symbol. Player picks ANY unmarked cell on the entire board. Rare (1-1.5% per reel) but game-changing when it appears.</p>
+          </div>
+          <div class="feature-card" style="border-left-color: #EF5350">
+            <div class="fc-icon">&#128520;</div>
+            <h3>El Diablito — Blocker</h3>
+            <p>A dead result — no match possible for that reel. Introduced at Medium difficulty (level 16+). The frustration mechanic that makes wilds feel rewarding by contrast.</p>
+          </div>
+          <div class="feature-card turq">
+            <div class="fc-icon">&#127920;</div>
+            <h3>La Ruleta — Free Spin</h3>
+            <p>Awards +1 extra spin, extending the level. A lifeline when you're close to a LOCO but running out of turns. Appears at 1.5-2% per reel.</p>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Design Rule:</strong>
+          <p>Total positive symbol chance (wilds + free spins) must ALWAYS exceed blocker chance. Even at Expert difficulty (4% blocker), positives are 6.5%. The game should always feel more generous than punishing.</p>
+        </div>
+      </div>
+
+      <!-- Board Mechanics -->
+      <div class="section">
+        <div class="section-title">Board Mechanics</div>
+        <div class="feature-grid">
+          <div class="feature-card turq">
+            <div class="fc-icon">&#128208;</div>
+            <h3>Progressive Board Size</h3>
+            <p>Tutorial through Hard: 5x5 boards (25 cards, 75-card pool). Very Hard and Expert: 6x6 boards (36 cards, 90-card pool). Bigger boards = more cells to clear, more possible LOCOs, higher skill ceiling.</p>
+          </div>
+          <div class="feature-card orange">
+            <div class="fc-icon">&#128274;</div>
+            <h3>Locked Cells</h3>
+            <p>Introduced at Medium (level 16). Locked cells need TWO matches to daub — first match cracks the lock, second marks it. Adds strategic depth: do you waste a wild on a locked cell, or target an easier LOCO?</p>
+          </div>
+          <div class="feature-card gold">
+            <div class="fc-icon">&#10006;&#65039;</div>
+            <h3>Multiplier Cells</h3>
+            <p>Introduced at Hard (level 31). Multiplier cells grant 2x points when matched (50 &rarr; 100 pts). LOCOs containing a multiplier cell score 2,000 instead of 1,000. Creates high-value targets on the board.</p>
+          </div>
+          <div class="feature-card purple">
+            <div class="fc-icon">&#127963;&#65039;</div>
+            <h3>Slingo Column Restrictions</h3>
+            <p>Each column on the board only contains cards from a specific range (col 0 = cards 1-15, col 1 = 16-30, etc.). Each reel can only show cards from its column's range. This is the core Slingo mechanic that prevents any single spin from matching the whole board.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Five Worlds -->
+      <div class="section">
+        <div class="section-title">Five Worlds — 150 Levels</div>
+        <div class="world-cards">
+          <div class="world-card">
+            <div class="wc-num">1</div>
+            <div class="wc-body">
+              <h4>El Mercado</h4>
+              <div class="wc-meta"><span>Levels 1-30</span> <span>5x5 Board</span> <span>Tutorial &rarr; Medium</span></div>
+              <p>A colourful Mexican marketplace. A young Loteria caller sets up their first table, learning the craft. Locked cells appear at level 16.</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">2</div>
+            <div class="wc-body">
+              <h4>La Playa</h4>
+              <div class="wc-meta"><span>Levels 31-60</span> <span>5x5 &rarr; 6x6</span> <span>Hard &rarr; Very Hard</span></div>
+              <p>Tropical beach town with cantinas on the sand. Multiplier cells appear at level 31. Board expands to 6x6 at level 51.</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">3</div>
+            <div class="wc-body">
+              <h4>El Pueblo</h4>
+              <div class="wc-meta"><span>Levels 61-90</span> <span>6x6 Board</span> <span>Very Hard &rarr; Expert</span></div>
+              <p>Traditional mountain village in the Sierra. Full mechanic set active — locked cells, multipliers, and the highest blocker rates yet.</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">4</div>
+            <div class="wc-body">
+              <h4>La Fiesta</h4>
+              <div class="wc-meta"><span>Levels 91-120</span> <span>6x6 Board</span> <span>Expert</span></div>
+              <p>Grand carnival celebration — fireworks, mariachi, papel picado everywhere. Maximum mechanic density, the core endgame grind.</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">5</div>
+            <div class="wc-body">
+              <h4>El Cielo</h4>
+              <div class="wc-meta"><span>Levels 121-150</span> <span>6x6 Board</span> <span>Expert</span></div>
+              <p>Celestial Dia de los Muertos realm beyond the marigold bridge. Play against the spirits of legendary Loteria masters in the final challenge.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Difficulty -->
+      <div class="section">
+        <div class="section-title">Difficulty Tuning</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Tier</th><th>Levels</th><th>Board</th><th>Spins</th><th>Col Wild</th><th>Board Wild</th><th>Free Spin</th><th>Blocker</th><th>Locked</th><th>Multiplier</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="highlight">Tutorial</td><td>1-5</td><td>5x5</td><td class="num">15</td><td class="num">5.0%</td><td class="num">1.5%</td><td class="num">2.0%</td><td class="num">0%</td><td class="num">0</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Easy</td><td>6-15</td><td>5x5</td><td class="num">12</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">0%</td><td class="num">0</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Medium</td><td>16-30</td><td>5x5</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">2.0%</td><td class="num">1-3</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Hard</td><td>31-50</td><td>5x5</td><td class="num">10</td><td class="num">4.5%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">3.0%</td><td class="num">2-4</td><td class="num">1-2</td></tr>
+            <tr><td class="highlight">Very Hard</td><td>51-70</td><td>6x6</td><td class="num">11</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">3.5%</td><td class="num">3-5</td><td class="num">2-3</td></tr>
+            <tr><td class="highlight">Expert</td><td>71+</td><td>6x6</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">4.0%</td><td class="num">4-6</td><td class="num">2-4</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Economy -->
+      <div class="section">
+        <div class="section-title">Economy — Three Currencies</div>
+        <div class="econ-row">
+          <div class="econ-card">
+            <div class="ec-icon">&#127903;</div>
+            <h4>Tickets</h4>
+            <div class="ec-role">Energy Gate</div>
+            <div class="ec-detail">
+              <strong>Earn:</strong> 1 per 2hrs (cap 5), ads (3/day), gem purchase, daily login<br>
+              <strong>Spend:</strong> 1 per level entry<br>
+              <strong>Purpose:</strong> Session pacing, return visits
+            </div>
+          </div>
+          <div class="econ-card">
+            <div class="ec-icon">&#129689;</div>
+            <h4>Coins</h4>
+            <div class="ec-role">Soft Currency</div>
+            <div class="ec-detail">
+              <strong>Earn:</strong> Level rewards (3K-7.5K), daily login, ads, piggy bank<br>
+              <strong>Spend:</strong> Power-ups (500-4K), extra spins (1K-10K)<br>
+              <strong>Purpose:</strong> Gameplay advantages, progression feel
+            </div>
+          </div>
+          <div class="econ-card">
+            <div class="ec-icon">&#128142;</div>
+            <h4>Gems</h4>
+            <div class="ec-role">Hard Currency (IAP)</div>
+            <div class="ec-detail">
+              <strong>Earn:</strong> IAP ($0.99-$99.99), daily login, leaderboard rewards<br>
+              <strong>Spend:</strong> Tickets, coins, premium items, piggy bank break<br>
+              <strong>Purpose:</strong> Revenue driver, premium convenience
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>1 gem = 100 coins</strong>
+          <p>Universal conversion ratio across all items. Power-ups, coin packs, ticket packs — all follow this ratio. Makes mental math easy for players and keeps the economy internally consistent.</p>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><span class="ms-val">5 / 25K / 5</span><span class="ms-label">Starting balance (TK / CN / GM)</span></div>
+          <div class="mini-stat"><span class="ms-val">~12,500</span><span class="ms-label">F2P coins earned/day</span></div>
+          <div class="mini-stat"><span class="ms-val">5-8</span><span class="ms-label">Levels per day (F2P)</span></div>
+          <div class="mini-stat"><span class="ms-val">$2.99</span><span class="ms-label">Starter Bundle (one-time)</span></div>
+          <div class="mini-stat"><span class="ms-val">$0.99-$99.99</span><span class="ms-label">IAP gem pack range</span></div>
+        </div>
+      </div>
+
+      <!-- Power-Ups -->
+      <div class="section">
+        <div class="section-title">Power-Ups — Named After Loteria Archetypes</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Loteria Name</th><th>Power-Up</th><th>Effect</th><th>Coins</th><th>Gems</th><th>Rarity</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>El Corazon</td><td>Extra Spin</td><td>+1 spin</td><td class="num">500</td><td class="num">5</td><td>Common</td></tr>
+            <tr><td>La Estrella</td><td>Reveal</td><td>Shows best card to mark</td><td class="num">1,000</td><td class="num">10</td><td>Common</td></tr>
+            <tr><td>El Comodin</td><td>Column Wild</td><td>Mark any card in one column</td><td class="num">1,500</td><td class="num">15</td><td>Uncommon</td></tr>
+            <tr><td>El Valiente</td><td>Remove Blocker</td><td>Removes a Diablito</td><td class="num">2,000</td><td class="num">20</td><td>Rare</td></tr>
+            <tr><td>El Sol Dorado</td><td>Board Wild</td><td>Mark any card anywhere</td><td class="num">2,500</td><td class="num">25</td><td>Rare</td></tr>
+            <tr><td>La Corona</td><td>Multiplier</td><td>2x points for 3 matches</td><td class="num">2,500</td><td class="num">25</td><td>Rare</td></tr>
+            <tr><td>La Muerte</td><td>Row Clear</td><td>Instantly complete a row</td><td class="num">4,000</td><td class="num">40</td><td>Epic</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Engagement -->
+      <div class="section">
+        <div class="section-title">Engagement Systems</div>
+        <div class="feature-grid">
+          <div class="feature-card turq">
+            <div class="fc-icon">&#128197;</div>
+            <h3>Daily Login Rewards</h3>
+            <p>7-day repeating cycle escalating from 1,000 coins to a Day 7 jackpot of 5,000 coins + 15 gems + 2 tickets. Missing a day doesn't reset the streak — it pauses it.</p>
+          </div>
+          <div class="feature-card gold">
+            <div class="fc-icon">&#128055;</div>
+            <h3>Piggy Bank</h3>
+            <p>10% of all earned coins auto-save to the piggy bank. When full, pay gems to "break" it. 4 tiers (Ceramic &rarr; Gold) with increasing capacity. The break cost is always a better deal than buying coins directly.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">&#127942;</div>
+            <h3>Leaderboards</h3>
+            <p>Weekly "La Semana" and monthly "El Mes" leaderboards tracking stars earned. Top players win coins, gems, tickets, and exclusive frames/titles.</p>
+          </div>
+          <div class="feature-card purple">
+            <div class="fc-icon">&#127915;</div>
+            <h3>Season Pass</h3>
+            <p>50 levels per 6-week season, themed around Mexican holidays. Free and premium ($4.99/$9.99) tracks. Daily/weekly challenges earn XP toward pass rewards.</p>
+          </div>
+          <div class="feature-card orange">
+            <div class="fc-icon">&#127916;</div>
+            <h3>Rewarded Ads</h3>
+            <p>5 ad placements with daily caps: free tickets (3/day), double coins (5/day), free power-ups (2/day), coin bonus (10/day). All limits enforced server-side.</p>
+          </div>
+          <div class="feature-card green">
+            <div class="fc-icon">&#127991;&#65039;</div>
+            <h3>Daily Deals</h3>
+            <p>Rotating store deals with 20-50% discounts. Creates urgency (FOMO) and gives players a reason to check the store daily even when not planning to buy.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical -->
+      <div class="section">
+        <div class="section-title">Technical Architecture</div>
+        <div class="feature-grid">
+          <div class="feature-card turq">
+            <div class="fc-icon">&#128737;&#65039;</div>
+            <h3>Server-Authoritative</h3>
+            <p>ALL game logic runs on PlayFab CloudScript — board generation, RNG, scoring, currency operations. The Unity client is a display layer. 35 CloudScript handlers, 4,700 lines of server code.</p>
+          </div>
+          <div class="feature-card green">
+            <div class="fc-icon">&#128274;</div>
+            <h3>Anti-Cheat by Design</h3>
+            <p>No client-side RNG, no local currency storage, no save-file manipulation. IAP receipt validation against App Store and Google Play. Ticket regen uses server timestamps — no clock exploits.</p>
+          </div>
+          <div class="feature-card orange">
+            <div class="fc-icon">&#128241;</div>
+            <h3>Unity 2D (URP)</h3>
+            <p>~40 C# scripts across 6 namespaces. Service locator pattern for dependency injection. Separate gameplay, UI, data, and PlayFab integration layers.</p>
+          </div>
+          <div class="feature-card purple">
+            <div class="fc-icon">&#9729;&#65039;</div>
+            <h3>PlayFab Backend</h3>
+            <p>Economy v2 for inventory, Player Data for state, Leaderboards v2 for rankings. Per-player sequential execution — no race conditions, no locking needed.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 2: ECONOMY & STORE                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-economy">
+  <div class="overview">
+    <div class="overview-inner">
+
+      <div class="hero" style="padding: 24px 0 32px;">
+        <h2 style="font-size: 36px;">ECONOMY &amp; STORE</h2>
+        <div class="tagline">Three currencies, ethical F2P, server-authoritative</div>
+      </div>
+
+      <!-- Currency System Overview -->
+      <div class="section">
+        <div class="section-title">Currency System Overview</div>
+        <div class="econ-row">
+          <div class="econ-card">
+            <div class="ec-icon">&#127903;</div>
+            <h4>Tickets (TK)</h4>
+            <div class="ec-role">Energy Gate</div>
+            <div class="ec-detail">
+              <strong>PlayFab ID:</strong> <code style="color:var(--turquoise)">a8969912-1d19-44ca-a56f-e9d7c9458636</code><br><br>
+              <strong>Earn:</strong> Time regen (1/2hr), ads (3/day), gem purchase, daily login<br>
+              <strong>Spend:</strong> 1 per level entry<br>
+              <strong>Cap:</strong> 5 free tickets max
+            </div>
+          </div>
+          <div class="econ-card">
+            <div class="ec-icon">&#129689;</div>
+            <h4>Coins (CN)</h4>
+            <div class="ec-role">Soft Currency</div>
+            <div class="ec-detail">
+              <strong>PlayFab ID:</strong> <code style="color:var(--turquoise)">da74ff4b-1117-4725-9eeb-007b98db877e</code><br><br>
+              <strong>Earn:</strong> Level rewards (3K-7.5K), daily login, ads, piggy bank<br>
+              <strong>Spend:</strong> Power-ups (500-4K), extra spins (1K-10K)<br>
+              <strong>F2P rate:</strong> ~12,500 coins/day net
+            </div>
+          </div>
+          <div class="econ-card">
+            <div class="ec-icon">&#128142;</div>
+            <h4>Gems (GM)</h4>
+            <div class="ec-role">Hard Currency (IAP)</div>
+            <div class="ec-detail">
+              <strong>PlayFab ID:</strong> <code style="color:var(--turquoise)">1013292e-6927-4c73-81cf-a3b2d71f3be7</code><br><br>
+              <strong>Earn:</strong> IAP ($0.99-$99.99), daily login, leaderboard<br>
+              <strong>Spend:</strong> Tickets, coins, premium items, piggy bank break<br>
+              <strong>F2P rate:</strong> ~30-50 gems/week
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>1 gem = 100 coins</strong>
+          <p>Universal conversion ratio across all items. Power-ups, coin packs, ticket packs — all follow this ratio. Makes mental math easy for players and keeps the economy internally consistent.</p>
+        </div>
+      </div>
+
+      <!-- Currency Flow Diagram -->
+      <div class="section">
+        <div class="section-title">Currency Flow Diagram</div>
+        <div class="flow-diagram"><span class="flow-gold">IAP ($)</span> <span class="flow-arrow">───&gt;</span> <span class="flow-purple">Gems</span> <span class="flow-arrow">───&gt;</span> <span class="flow-gold">Coins</span> <span class="flow-arrow">───&gt;</span> <span class="flow-pink">Power-Ups</span> <span class="flow-arrow">───&gt;</span> <span class="flow-turq">Gameplay Advantage</span>
+
+<span class="flow-turq">Time (2hr)</span> <span class="flow-arrow">───&gt;</span> <span class="flow-gold">Tickets</span> <span class="flow-arrow">───&gt;</span> <span class="flow-pink">Level Entry</span> <span class="flow-arrow">───&gt;</span> <span class="flow-turq">Gameplay</span>
+
+<span class="flow-turq">Gameplay</span> <span class="flow-arrow">───&gt;</span> <span class="flow-gold">Coins (rewards)</span> <span class="flow-arrow">───&gt;</span> <span class="flow-pink">Power-Ups</span> <span class="flow-arrow">───&gt;</span> <span class="flow-turq">Better Scores</span>
+
+<span class="flow-turq">Gameplay</span> <span class="flow-arrow">───&gt;</span> <span class="flow-gold">10% to Piggy Bank</span> <span class="flow-arrow">───&gt;</span> <span class="flow-purple">Break (gems)</span> <span class="flow-arrow">───&gt;</span> <span class="flow-gold">Bulk Coins</span></div>
+      </div>
+
+      <!-- Starting Balance -->
+      <div class="section">
+        <div class="section-title">Starting Balance (New Player)</div>
+        <table class="data-table">
+          <thead><tr><th>Currency</th><th>Amount</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Tickets</td><td class="num">5</td><td>Enough for 5 levels (~20 min first session before energy gate)</td></tr>
+            <tr><td class="highlight">Coins</td><td class="num">25,000</td><td>Can buy several power-ups to experience them; runs out by level ~15</td></tr>
+            <tr><td class="highlight">Gems</td><td class="num">5</td><td>Taste of premium currency; not enough to buy anything meaningful alone</td></tr>
+          </tbody>
+        </table>
+        <div class="callout turq" style="margin-top: 12px;">
+          <strong>Granted by:</strong>
+          <p><code>InitializeNewPlayer</code> CloudScript handler (idempotent — safe to call multiple times).</p>
+        </div>
+      </div>
+
+      <!-- Ticket System -->
+      <div class="section">
+        <div class="section-title">Ticket System (Energy Gate)</div>
+        <div class="sub-title">Regeneration</div>
+        <div class="mini-stats">
+          <div class="mini-stat"><span class="ms-val">2 hrs</span><span class="ms-label">Regen interval</span></div>
+          <div class="mini-stat"><span class="ms-val">5</span><span class="ms-label">Max free tickets</span></div>
+          <div class="mini-stat"><span class="ms-val">Server</span><span class="ms-label">Timer source</span></div>
+        </div>
+        <div class="sub-title">Ticket Sources</div>
+        <table class="data-table">
+          <thead><tr><th>Source</th><th>Amount</th><th>Limit</th></tr></thead>
+          <tbody>
+            <tr><td>Time regeneration</td><td class="num">1 per 2hr</td><td>Cap 5</td></tr>
+            <tr><td>Watch ad (FreeTicket)</td><td class="num">1</td><td>3x per day</td></tr>
+            <tr><td>Gem purchase (1 ticket)</td><td class="num">1</td><td>10 gems</td></tr>
+            <tr><td>Gem purchase (5 tickets)</td><td class="num">5</td><td>45 gems</td></tr>
+            <tr><td>Gem purchase (10 tickets)</td><td class="num">10</td><td>80 gems</td></tr>
+            <tr><td>Daily login (Day 2, 5, 7)</td><td class="num">1-2</td><td>Once per cycle</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top: 12px;">
+          <strong>F2P Analysis:</strong>
+          <p>5-8 tickets/day (5 regen + up to 3 ads) = 5-8 levels = ~30-60 min gameplay. Creates natural session breaks and return-visit motivation without being overly punishing.</p>
+        </div>
+      </div>
+
+      <!-- Coin Economy -->
+      <div class="section">
+        <div class="section-title">Coin Economy</div>
+        <div class="sub-title">Sources (How Players Earn Coins)</div>
+        <table class="data-table">
+          <thead><tr><th>Source</th><th>Amount</th><th>Frequency</th></tr></thead>
+          <tbody>
+            <tr><td>Level completion (Tutorial)</td><td class="num">5,000-6,500</td><td>Per level</td></tr>
+            <tr><td>Level completion (Easy)</td><td class="num">3,000-4,500</td><td>Per level</td></tr>
+            <tr><td>Level completion (Medium)</td><td class="num">3,500-5,000</td><td>Per level</td></tr>
+            <tr><td>Level completion (Hard)</td><td class="num">4,000-5,500</td><td>Per level</td></tr>
+            <tr><td>Level completion (Very Hard)</td><td class="num">5,000-6,500</td><td>Per level</td></tr>
+            <tr><td>Level completion (Expert)</td><td class="num">6,000-7,500</td><td>Per level</td></tr>
+            <tr><td>Daily login (Days 1, 3, 5, 7)</td><td class="num">1,000-5,000</td><td>Daily</td></tr>
+            <tr><td>Ad reward (CoinBonus)</td><td class="num">500</td><td>Up to 10x/day</td></tr>
+            <tr><td>Ad reward (DoubleCoins)</td><td class="num">2x level reward</td><td>Up to 5x/day</td></tr>
+            <tr><td>Piggy bank break</td><td class="num">5,000-100,000</td><td>When full</td></tr>
+            <tr><td>Leaderboard rewards</td><td class="num">1,000-200,000</td><td>Weekly/monthly</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Sinks (How Players Spend Coins)</div>
+        <table class="data-table">
+          <thead><tr><th>Sink</th><th>Cost</th><th>Frequency</th></tr></thead>
+          <tbody>
+            <tr><td>Extra Spin (El Corazon)</td><td class="num">500</td><td>During gameplay</td></tr>
+            <tr><td>Reveal (La Estrella)</td><td class="num">1,000</td><td>During gameplay</td></tr>
+            <tr><td>Column Wild (El Comodin)</td><td class="num">1,500</td><td>During gameplay</td></tr>
+            <tr><td>Remove Blocker (El Valiente)</td><td class="num">2,000</td><td>During gameplay</td></tr>
+            <tr><td>Board Wild (El Sol Dorado)</td><td class="num">2,500</td><td>During gameplay</td></tr>
+            <tr><td>Multiplier (La Corona)</td><td class="num">2,500</td><td>During gameplay</td></tr>
+            <tr><td>Row Clear (La Muerte)</td><td class="num">4,000</td><td>During gameplay</td></tr>
+            <tr><td>Extra spins (escalating)</td><td class="num">1,000-10,000</td><td>During gameplay</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Daily Flow Analysis (Typical F2P Day)</div>
+        <table class="data-table">
+          <thead><tr><th>Activity</th><th>Coins In</th><th>Coins Out</th></tr></thead>
+          <tbody>
+            <tr><td>Daily login (avg)</td><td class="num">+2,000</td><td>—</td></tr>
+            <tr><td>3 levels completed (avg)</td><td class="num">+13,500</td><td>—</td></tr>
+            <tr><td>2 ad watches</td><td class="num">+1,000</td><td>—</td></tr>
+            <tr><td>Power-ups used (2 avg)</td><td>—</td><td class="num">-3,000</td></tr>
+            <tr><td>Extra spins (1 avg)</td><td>—</td><td class="num">-1,000</td></tr>
+            <tr><td class="highlight">Net daily</td><td class="num" style="color:var(--success)">+16,500 in</td><td class="num" style="color:#EF5350">-4,000 out = +12,500 net</td></tr>
+          </tbody>
+        </table>
+        <div class="callout pink" style="margin-top: 12px;">
+          <strong>Purchase Pressure:</strong>
+          <p>At ~12,500 coins/day net, F2P players can sustain 2-4 power-ups per session but not every level. This creates purchase pressure for "close to LOCO" moments — the emotional peak where IAP converts best.</p>
+        </div>
+      </div>
+
+      <!-- Gem Economy -->
+      <div class="section">
+        <div class="section-title">Gem Economy</div>
+        <div class="sub-title">F2P Gem Sources</div>
+        <table class="data-table">
+          <thead><tr><th>Source</th><th>Gems</th><th>Frequency</th></tr></thead>
+          <tbody>
+            <tr><td>Daily login (Day 4)</td><td class="num">5</td><td>Weekly cycle</td></tr>
+            <tr><td>Daily login (Day 6)</td><td class="num">10</td><td>Weekly cycle</td></tr>
+            <tr><td>Daily login (Day 7)</td><td class="num">15</td><td>Weekly cycle</td></tr>
+            <tr><td>Weekly leaderboard (Top 100)</td><td class="num">5-100</td><td>Weekly</td></tr>
+            <tr><td>Monthly leaderboard (Top 100)</td><td class="num">10-500</td><td>Monthly</td></tr>
+            <tr><td>Season Pass (free track)</td><td class="num">~50 per season</td><td>Per season</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top: 12px;">
+          <strong>F2P gem income:</strong>
+          <p>~30-50 gems/week from daily logins + leaderboards. Enough to buy a ticket pack or a few power-ups monthly — enough to taste premium, not enough to sustain heavy use.</p>
+        </div>
+
+        <div class="sub-title">IAP Gem Packs</div>
+        <table class="data-table">
+          <thead><tr><th>Pack Name</th><th>Gems</th><th>Price</th><th>Bonus</th><th>Gems/$</th><th>PlayFab ID</th></tr></thead>
+          <tbody>
+            <tr><td>Punado de Gemas</td><td class="num">50</td><td class="num">$0.99</td><td>—</td><td class="num">50.5</td><td><code>gem_pack_tiny</code></td></tr>
+            <tr><td>Bolsa de Gemas</td><td class="num">275</td><td class="num">$4.99</td><td class="num">+10%</td><td class="num">55.1</td><td><code>gem_pack_small</code></td></tr>
+            <tr><td>Cofre de Gemas</td><td class="num">625</td><td class="num">$9.99</td><td class="num">+25%</td><td class="num">62.6</td><td><code>gem_pack_medium</code></td></tr>
+            <tr><td>Tesoro de Gemas</td><td class="num">1,400</td><td class="num">$19.99</td><td class="num">+40%</td><td class="num">70.0</td><td><code>gem_pack_large</code></td></tr>
+            <tr><td>Fortuna de Gemas</td><td class="num">3,600</td><td class="num">$49.99</td><td class="num">+45%</td><td class="num">72.0</td><td><code>gem_pack_huge</code></td></tr>
+            <tr><td>Montana de Gemas</td><td class="num">8,000</td><td class="num">$99.99</td><td class="num">+60%</td><td class="num">80.0</td><td><code>gem_pack_mega</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Starter Bundle ($2.99, one-time)</div>
+        <div class="feature-card gold" style="margin-top: 8px;">
+          <h3>Paquete de Inicio — 60% Off</h3>
+          <p>200 gems + 10,000 coins + 10 tickets + 5 Extra Spins + 3 Board Wilds. Total value ~$7.39. Shown after level 15 when the player understands the economy enough to value the deal. 72-hour window.</p>
+        </div>
+      </div>
+
+      <!-- Extra Spin Pricing -->
+      <div class="section">
+        <div class="section-title">Extra Spin Pricing (Escalating)</div>
+        <table class="data-table">
+          <thead><tr><th>Purchase #</th><th>Coins</th><th>Gems</th><th>Design Rationale</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1st</td><td class="num">1,000</td><td class="num">10</td><td>Affordable — "just one more"</td></tr>
+            <tr><td class="highlight">2nd</td><td class="num">2,500</td><td class="num">25</td><td>Noticeable cost, still reasonable</td></tr>
+            <tr><td class="highlight">3rd</td><td class="num">5,000</td><td class="num">50</td><td>Expensive — approaches level reward value</td></tr>
+            <tr><td class="highlight">4th+</td><td class="num">10,000</td><td class="num">100</td><td>Deliberately punishing — designed to be a bad deal</td></tr>
+          </tbody>
+        </table>
+        <div class="callout orange" style="margin-top: 12px;">
+          <strong>The "Reload" Moment:</strong>
+          <p>The escalating cost creates a natural stop. Buying 1-2 extra spins is a sensible gamble. Buying 3+ means spending more than the level reward — this is the moment that drives IAP (or teaches the player to accept the loss).</p>
+        </div>
+      </div>
+
+      <!-- Store Layout -->
+      <div class="section">
+        <div class="section-title">Store Layout</div>
+
+        <div class="sub-title">Coin Packs (Purchased with Gems)</div>
+        <table class="data-table">
+          <thead><tr><th>Pack Name</th><th>Coins</th><th>Gem Cost</th><th>Coins/Gem</th><th>Bonus vs Small</th></tr></thead>
+          <tbody>
+            <tr><td>Pocas Monedas</td><td class="num">5,000</td><td class="num">25</td><td class="num">200</td><td>Base</td></tr>
+            <tr><td>Algunas Monedas</td><td class="num">15,000</td><td class="num">65</td><td class="num">231</td><td class="num">+15%</td></tr>
+            <tr><td>Muchas Monedas</td><td class="num">50,000</td><td class="num">175</td><td class="num">286</td><td class="num">+43%</td></tr>
+            <tr><td>Monton de Monedas</td><td class="num">150,000</td><td class="num">450</td><td class="num">333</td><td class="num">+67%</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Ticket Packs (Purchased with Gems)</div>
+        <table class="data-table">
+          <thead><tr><th>Pack Name</th><th>Tickets</th><th>Gem Cost</th><th>Gems/Ticket</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Boleto Extra</td><td class="num">1</td><td class="num">10</td><td class="num">10.0</td><td>Instant refill</td></tr>
+            <tr><td>Pack de Boletos</td><td class="num">5</td><td class="num">45</td><td class="num">9.0</td><td>Full ticket refill</td></tr>
+            <tr><td>Boletos Premium</td><td class="num">10</td><td class="num">80</td><td class="num">8.0</td><td>2x normal capacity</td></tr>
+            <tr><td>Boletos Infinitos</td><td class="num">&infin; (24hr)</td><td class="num">150</td><td>N/A</td><td>Unlimited plays for 24 hours</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Power-Up Bundles</div>
+        <div class="feature-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="feature-card" style="border-left-color: var(--red)">
+            <h3>El Guerrero Bundle</h3>
+            <p style="color:var(--gold); font-weight:600; margin-bottom:8px;">100 Gems (~$1.99)</p>
+            <p>5 Extra Spin (25 GM) + 3 Column Wild (45 GM) + 2 Remove Blocker (40 GM)<br><strong style="color:var(--success)">Value: 110 Gems (10% bonus)</strong></p>
+          </div>
+          <div class="feature-card gold">
+            <h3>La Fortuna Bundle</h3>
+            <p style="color:var(--gold); font-weight:600; margin-bottom:8px;">200 Gems (~$3.99)</p>
+            <p>5 Board Wild (150 GM) + 3 Reveal (30 GM) + 2 Multiplier (50 GM)<br><strong style="color:var(--success)">Value: 230 Gems (15% bonus)</strong></p>
+          </div>
+          <div class="feature-card purple">
+            <h3>El Maestro Bundle</h3>
+            <p style="color:var(--gold); font-weight:600; margin-bottom:8px;">350 Gems (~$6.99)</p>
+            <p>10 Extra Spin + 5 Column Wild + 3 Board Wild + 3 Row Clear + 2 Multiplier<br><strong style="color:var(--success)">Value: 415 Gems (19% bonus)</strong></p>
+          </div>
+        </div>
+
+        <div class="sub-title">Daily Deals System</div>
+        <table class="data-table">
+          <thead><tr><th>Slot</th><th>Item Type</th><th>Discount Range</th><th>Refresh</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Deal 1</td><td>Random Power-Up x5</td><td class="num">20-40% off</td><td>Daily 00:00 UTC</td></tr>
+            <tr><td class="highlight">Deal 2</td><td>Coin Pack</td><td class="num">15-30% off</td><td>Daily 00:00 UTC</td></tr>
+            <tr><td class="highlight">Deal 3</td><td>Featured Bundle</td><td class="num">25-50% off</td><td>Daily 00:00 UTC</td></tr>
+            <tr><td class="highlight">Weekly Super</td><td>Premium Bundle</td><td class="num">50-60% off</td><td>Every Sunday</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Piggy Bank -->
+      <div class="section">
+        <div class="section-title">Piggy Bank (La Alcancia)</div>
+        <div class="callout turq" style="margin-bottom: 16px;">
+          <strong>How it works:</strong>
+          <p>10% of all earned coins automatically go to the piggy bank. When full, players pay gems to "break" it. The coin-per-gem rate is always better than buying coins directly — rewarding patience.</p>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Tier</th><th>Unlocks At</th><th>Capacity</th><th>Break Cost</th><th>Effective Rate</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Ceramic</td><td>Start</td><td class="num">5,000</td><td class="num">10 gems</td><td class="num">500 coins/gem</td></tr>
+            <tr><td class="highlight">Bronze</td><td>Level 20</td><td class="num">15,000</td><td class="num">25 gems</td><td class="num">600 coins/gem</td></tr>
+            <tr><td class="highlight">Silver</td><td>Level 50</td><td class="num">40,000</td><td class="num">50 gems</td><td class="num">800 coins/gem</td></tr>
+            <tr><td class="highlight">Gold</td><td>Level 100</td><td class="num">100,000</td><td class="num">100 gems</td><td class="num">1,000 coins/gem</td></tr>
+          </tbody>
+        </table>
+        <div class="sub-title">Fill Rate Sources</div>
+        <table class="data-table">
+          <thead><tr><th>Source</th><th>Piggy Bank Contribution</th></tr></thead>
+          <tbody>
+            <tr><td>Level completion coins</td><td class="num">10%</td></tr>
+            <tr><td>LOCO bonus coins</td><td class="num">15%</td></tr>
+            <tr><td>Streak multiplier bonus</td><td class="num">10%</td></tr>
+            <tr><td>Daily reward coins</td><td class="num">5%</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top: 12px;">
+          <strong>Note:</strong>
+          <p>Piggy bank only fills from earned coins, not purchased coins. Base coin pack rate is 200 coins/gem — even the Ceramic piggy bank at 500 coins/gem is 2.5x better value.</p>
+        </div>
+      </div>
+
+      <!-- Economy Health -->
+      <div class="section">
+        <div class="section-title">Economy Health Indicators</div>
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>Healthy Range</th><th>Concern If</th></tr></thead>
+          <tbody>
+            <tr><td>Coins earned/day (F2P)</td><td class="num">10,000-15,000</td><td>&lt; 8,000 (too stingy) or &gt; 20,000 (inflation)</td></tr>
+            <tr><td>Tickets used/day</td><td class="num">4-7</td><td>&lt; 3 (not returning) or &gt; 10 (gate too loose)</td></tr>
+            <tr><td>Extra spins purchased/level</td><td class="num">0.3-0.8</td><td>&gt; 1.0 (levels too hard) or &lt; 0.1 (no pressure)</td></tr>
+            <tr><td>Power-ups purchased/level</td><td class="num">0.5-1.5</td><td>&gt; 2.0 (too dependent) or &lt; 0.2 (not valued)</td></tr>
+            <tr><td>Piggy bank break rate</td><td class="num">60-80% when full</td><td>&lt; 40% (gem cost too high)</td></tr>
+            <tr><td>Gem conversion rate</td><td class="num">3-8% of DAU</td><td>&lt; 2% (pricing issues)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 3: LEVEL DESIGN                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-levels">
+  <div class="overview">
+    <div class="overview-inner">
+
+      <div class="hero" style="padding: 24px 0 32px;">
+        <h2 style="font-size: 36px;">LEVEL DESIGN</h2>
+        <div class="tagline">150 levels, 5 worlds, 6 difficulty levers</div>
+      </div>
+
+      <!-- World Progression -->
+      <div class="section">
+        <div class="section-title">World Progression</div>
+        <div class="world-cards">
+          <div class="world-card">
+            <div class="wc-num">1</div>
+            <div class="wc-body">
+              <h4>El Mercado</h4>
+              <div class="wc-meta"><span>Levels 1-30</span> <span>5x5 Board</span> <span>Tutorial &rarr; Medium</span></div>
+              <p><strong>Theme:</strong> Colourful Mexican marketplace — fruit stalls, pinata vendors, papel picado overhead.<br>
+              <strong>Narrative:</strong> A young Loteria caller sets up their first table, learning the craft from market vendors.<br>
+              <strong>Visual:</strong> Warm sunset tones, terracotta and turquoise, hand-painted market stall backgrounds.<br>
+              <strong>Gameplay:</strong> Lv 1-5 Tutorial (15 spins, no blockers), Lv 6-15 Easy (12 spins), Lv 16-30 Medium (10 spins, first Diablitos at 2%, locked cells 1-3).</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">2</div>
+            <div class="wc-body">
+              <h4>La Playa</h4>
+              <div class="wc-meta"><span>Levels 31-60</span> <span>5x5 &rarr; 6x6</span> <span>Hard &rarr; Very Hard</span></div>
+              <p><strong>Theme:</strong> Tropical beach town — cantinas on the sand, hammocks, palm trees, tiki torches.<br>
+              <strong>Narrative:</strong> Word spreads and the caller is invited to the coast, where beachside games draw bigger crowds.<br>
+              <strong>Visual:</strong> Ocean blues, coral pinks, golden sand, sunset gradients, palm shadows.<br>
+              <strong>Gameplay:</strong> Lv 31-50 Hard (3% blockers, multiplier cells introduced 1-2). Lv 51-60 board expands to 6x6.</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">3</div>
+            <div class="wc-body">
+              <h4>El Pueblo</h4>
+              <div class="wc-meta"><span>Levels 61-90</span> <span>6x6 Board</span> <span>Very Hard &rarr; Expert</span></div>
+              <p><strong>Theme:</strong> Traditional mountain village — cobblestone streets, colonial church, Sierra Madre backdrop.<br>
+              <strong>Narrative:</strong> Deep in the Sierra, a fiesta-loving pueblo challenges the caller with ancient board layouts.<br>
+              <strong>Visual:</strong> Earth tones, warm yellows, colonial architecture, mountain mist, candle light.<br>
+              <strong>Gameplay:</strong> Full mechanic set. Lv 71+ Expert tier begins (4% blockers, 4-6 locked, 2-4 multiplier).</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">4</div>
+            <div class="wc-body">
+              <h4>La Fiesta</h4>
+              <div class="wc-meta"><span>Levels 91-120</span> <span>6x6 Board</span> <span>Expert</span></div>
+              <p><strong>Theme:</strong> Grand carnival celebration — fireworks, papel picado, alebrije floats, mariachi bands.<br>
+              <strong>Narrative:</strong> The grandest fiesta where stakes are highest and rewards legendary.<br>
+              <strong>Visual:</strong> Explosion of colour — bright pinks, oranges, purples, confetti particles, neon.<br>
+              <strong>Gameplay:</strong> Maximum mechanic density, the core endgame grind for dedicated players.</p>
+            </div>
+          </div>
+          <div class="world-card">
+            <div class="wc-num">5</div>
+            <div class="wc-body">
+              <h4>El Cielo</h4>
+              <div class="wc-meta"><span>Levels 121-150</span> <span>6x6 Board</span> <span>Expert</span></div>
+              <p><strong>Theme:</strong> Celestial Dia de los Muertos realm — floating marigold bridges, spirit animals, starlit sky.<br>
+              <strong>Narrative:</strong> Beyond the marigold bridge, spirits of legendary Loteria masters await the final challenge.<br>
+              <strong>Visual:</strong> Deep purples, midnight blue, marigold gold, ethereal glow, floating candles.<br>
+              <strong>Gameplay:</strong> Same Expert difficulty; potential unique twists (all-locked boards, all-multiplier boards).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Difficulty Configuration -->
+      <div class="section">
+        <div class="section-title">Difficulty Configuration (Authoritative Values)</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Tier</th><th>Levels</th><th>Board</th><th>Spins</th><th>Col Wild</th><th>Board Wild</th><th>Free Spin</th><th>Blocker</th><th>Total+</th><th>Locked</th><th>Multiplier</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="highlight">Tutorial</td><td>1-5</td><td>5x5</td><td class="num">15</td><td class="num">5.0%</td><td class="num">1.5%</td><td class="num">2.0%</td><td class="num">0.0%</td><td class="num" style="color:var(--success)">8.5%</td><td class="num">0</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Easy</td><td>6-15</td><td>5x5</td><td class="num">12</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">0.0%</td><td class="num" style="color:var(--success)">7.0%</td><td class="num">0</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Medium</td><td>16-30</td><td>5x5</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">2.0%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">1-3</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Hard</td><td>31-50</td><td>5x5</td><td class="num">10</td><td class="num">4.5%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">3.0%</td><td class="num" style="color:var(--success)">7.5%</td><td class="num">2-4</td><td class="num">1-2</td></tr>
+            <tr><td class="highlight">Very Hard</td><td>51-70</td><td>6x6</td><td class="num">11</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">3.5%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">3-5</td><td class="num">2-3</td></tr>
+            <tr><td class="highlight">Expert</td><td>71+</td><td>6x6</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">4.0%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">4-6</td><td class="num">2-4</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Positive vs Blocker % per Tier</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">Tutorial</div>
+            <div class="bar-track">
+              <div class="bar-fill positive" style="width:85%">8.5%</div>
+              <div class="bar-fill blocker" style="width:0%"></div>
+            </div>
+            <div class="bar-val" style="color:var(--success)">8.5% vs 0%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Easy</div>
+            <div class="bar-track">
+              <div class="bar-fill positive" style="width:70%">7.0%</div>
+              <div class="bar-fill blocker" style="width:0%"></div>
+            </div>
+            <div class="bar-val" style="color:var(--success)">7.0% vs 0%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Medium</div>
+            <div class="bar-track">
+              <div class="bar-fill positive" style="width:65%">6.5%</div>
+              <div class="bar-fill blocker" style="width:20%">2%</div>
+            </div>
+            <div class="bar-val">6.5% vs 2.0%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Hard</div>
+            <div class="bar-track">
+              <div class="bar-fill positive" style="width:75%">7.5%</div>
+              <div class="bar-fill blocker" style="width:25%">3%</div>
+            </div>
+            <div class="bar-val">7.5% vs 3.0%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Very Hard</div>
+            <div class="bar-track">
+              <div class="bar-fill positive" style="width:65%">6.5%</div>
+              <div class="bar-fill blocker" style="width:35%">3.5%</div>
+            </div>
+            <div class="bar-val">6.5% vs 3.5%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Expert</div>
+            <div class="bar-track">
+              <div class="bar-fill positive" style="width:65%">6.5%</div>
+              <div class="bar-fill blocker" style="width:40%">4%</div>
+            </div>
+            <div class="bar-val">6.5% vs 4.0%</div>
+          </div>
+        </div>
+        <div class="callout green">
+          <strong>Design Rule:</strong>
+          <p>Total positive symbol chance (wilds + free spins) must ALWAYS exceed blocker chance. Even at Expert difficulty (4% blocker), positives are 6.5%.</p>
+        </div>
+      </div>
+
+      <!-- New Mechanic Schedule -->
+      <div class="section">
+        <div class="section-title">New Mechanic Schedule</div>
+        <div class="feature-grid">
+          <div class="feature-card orange">
+            <div class="fc-icon">&#128274;</div>
+            <h3>Locked Cells — Level 16+</h3>
+            <p><strong>Rules:</strong> Requires 2 matches to daub (first cracks, second marks). Wild cards work for either step. Placed server-side, weighted toward board center.<br><br>
+            <strong>Visual states:</strong> Padlock overlay &rarr; Cracked &rarr; Removed<br><br>
+            <strong>Frequency ramp:</strong> 1-3 at Medium &rarr; 2-4 at Hard &rarr; 3-5 at Very Hard &rarr; 4-6 at Expert</p>
+          </div>
+          <div class="feature-card gold">
+            <div class="fc-icon">&#10006;&#65039;</div>
+            <h3>Multiplier Cells — Level 31+</h3>
+            <p><strong>Rules:</strong> Grants 2x points when matched (50 &rarr; 100 pts). LOCOs containing a multiplier cell score 2x (1,000 &rarr; 2,000 pts). Placed server-side, weighted toward edges/corners.<br><br>
+            <strong>Visual:</strong> Sparkle overlay with "x2" badge<br><br>
+            <strong>Frequency ramp:</strong> 1-2 at Hard &rarr; 2-3 at Very Hard &rarr; 2-4 at Expert</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Star Thresholds -->
+      <div class="section">
+        <div class="section-title">Star Thresholds</div>
+        <table class="data-table">
+          <thead><tr><th>Tier</th><th>1 Star</th><th>2 Stars</th><th>3 Stars</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Tutorial</td><td class="num">1,000</td><td class="num">2,500</td><td class="num">4,000</td></tr>
+            <tr><td class="highlight">Easy</td><td class="num">1,500</td><td class="num">3,000</td><td class="num">5,000</td></tr>
+            <tr><td class="highlight">Medium</td><td class="num">2,000</td><td class="num">3,500</td><td class="num">5,500</td></tr>
+            <tr><td class="highlight">Hard</td><td class="num">2,500</td><td class="num">4,000</td><td class="num">6,000</td></tr>
+            <tr><td class="highlight">Very Hard</td><td class="num">3,000</td><td class="num">5,000</td><td class="num">7,000</td></tr>
+            <tr><td class="highlight">Expert</td><td class="num">3,500</td><td class="num">5,500</td><td class="num">8,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Level Rewards -->
+      <div class="section">
+        <div class="section-title">Level Rewards</div>
+        <table class="data-table">
+          <thead><tr><th>Tier</th><th>Base Coins</th><th>Per Star Bonus</th><th>Max (3-Star)</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Tutorial</td><td class="num">5,000</td><td class="num">+500</td><td class="num">6,500</td></tr>
+            <tr><td class="highlight">Easy</td><td class="num">3,000</td><td class="num">+500</td><td class="num">4,500</td></tr>
+            <tr><td class="highlight">Medium</td><td class="num">3,500</td><td class="num">+500</td><td class="num">5,000</td></tr>
+            <tr><td class="highlight">Hard</td><td class="num">4,000</td><td class="num">+500</td><td class="num">5,500</td></tr>
+            <tr><td class="highlight">Very Hard</td><td class="num">5,000</td><td class="num">+500</td><td class="num">6,500</td></tr>
+            <tr><td class="highlight">Expert</td><td class="num">6,000</td><td class="num">+500</td><td class="num">7,500</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Board Generation -->
+      <div class="section">
+        <div class="section-title">Board Generation Algorithm</div>
+        <div class="feature-card turq" style="margin-bottom: 16px;">
+          <h3>Column-Restricted Card Assignment</h3>
+          <p>From CloudScript <code>generateBoard(size, poolSize)</code>:</p>
+          <p style="margin-top: 8px;">1. Initialize an empty <code>size x size</code> grid<br>
+          2. For each column <code>c</code> (0 to size-1):<br>
+          &nbsp;&nbsp;&nbsp;a. Get the card range for column <code>c</code><br>
+          &nbsp;&nbsp;&nbsp;b. Randomly select <code>size</code> cards from that range (no replacement)<br>
+          &nbsp;&nbsp;&nbsp;c. Assign one card per row in column <code>c</code><br>
+          3. Return the completed board</p>
+        </div>
+        <div class="sub-title">Card Range per Column</div>
+        <table class="data-table">
+          <thead><tr><th>Column</th><th>5x5 Range (15 cards each)</th><th>6x6 Range (15 cards each)</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Col 0</td><td>Cards 1-15</td><td>Cards 1-15</td></tr>
+            <tr><td class="highlight">Col 1</td><td>Cards 16-30</td><td>Cards 16-30</td></tr>
+            <tr><td class="highlight">Col 2</td><td>Cards 31-45</td><td>Cards 31-45</td></tr>
+            <tr><td class="highlight">Col 3</td><td>Cards 46-60</td><td>Cards 46-60</td></tr>
+            <tr><td class="highlight">Col 4</td><td>Cards 61-75</td><td>Cards 61-75</td></tr>
+            <tr><td class="highlight">Col 5</td><td>—</td><td>Cards 76-90</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- World Unlock -->
+      <div class="section">
+        <div class="section-title">World Unlock Conditions</div>
+        <table class="data-table">
+          <thead><tr><th>World</th><th>Unlocks At</th><th>Requirement</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">El Mercado</td><td>Start</td><td>Available immediately</td></tr>
+            <tr><td class="highlight">La Playa</td><td>Level 31</td><td>Complete El Mercado (level 30)</td></tr>
+            <tr><td class="highlight">El Pueblo</td><td>Level 61</td><td>Complete La Playa (level 60)</td></tr>
+            <tr><td class="highlight">La Fiesta</td><td>Level 91</td><td>Complete El Pueblo (level 90)</td></tr>
+            <tr><td class="highlight">El Cielo</td><td>Level 121</td><td>Complete La Fiesta (level 120)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 4: ENGAGEMENT SYSTEMS                  -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-engagement">
+  <div class="overview">
+    <div class="overview-inner">
+
+      <div class="hero" style="padding: 24px 0 32px;">
+        <h2 style="font-size: 36px;">ENGAGEMENT SYSTEMS</h2>
+        <div class="tagline">Daily loops, leaderboards, season pass, rewarded ads</div>
+      </div>
+
+      <!-- Daily Login -->
+      <div class="section">
+        <div class="section-title">Daily Login Rewards (7-Day Cycle)</div>
+        <table class="data-table">
+          <thead><tr><th>Day</th><th>Reward</th><th>Gem Equivalent</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Day 1</td><td>1,000 coins</td><td class="num">10 gems</td></tr>
+            <tr><td class="highlight">Day 2</td><td>1 ticket</td><td class="num">10 gems</td></tr>
+            <tr><td class="highlight">Day 3</td><td>2,000 coins</td><td class="num">20 gems</td></tr>
+            <tr><td class="highlight">Day 4</td><td>5 gems</td><td class="num">5 gems</td></tr>
+            <tr><td class="highlight">Day 5</td><td>3,000 coins + 1 ticket</td><td class="num">40 gems</td></tr>
+            <tr><td class="highlight">Day 6</td><td>10 gems</td><td class="num">10 gems</td></tr>
+            <tr><td class="highlight">Day 7</td><td>5,000 coins + 15 gems + 2 tickets</td><td class="num">85 gems</td></tr>
+          </tbody>
+        </table>
+        <div class="mini-stats" style="margin-top: 12px;">
+          <div class="mini-stat"><span class="ms-val">~180</span><span class="ms-label">Gem-equivalent per cycle</span></div>
+          <div class="mini-stat"><span class="ms-val">Pause</span><span class="ms-label">Missing a day pauses (no reset)</span></div>
+        </div>
+        <div class="callout" style="margin-top: 12px;">
+          <strong>Day 7 is the jackpot:</strong>
+          <p>85 gem-equivalent value on Day 7 (47% of the entire cycle's value) heavily incentivises streak completion.</p>
+        </div>
+      </div>
+
+      <!-- Piggy Bank Deep Dive -->
+      <div class="section">
+        <div class="section-title">Piggy Bank (La Alcancia) — Deep Dive</div>
+        <div class="callout turq" style="margin-bottom: 16px;">
+          <strong>Mechanic:</strong>
+          <p>10% of all earned coins auto-save to the piggy bank. When full, pay gems to "break" it. The break rate is always better than buying coins directly — this is a "delayed gratification" gem sink.</p>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Tier</th><th>Unlocks</th><th>Capacity</th><th>Break Cost</th><th>Coins/Gem</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Ceramic</td><td>Start</td><td class="num">5,000</td><td class="num">10 gems</td><td class="num">500</td></tr>
+            <tr><td class="highlight">Bronze</td><td>Lv 20</td><td class="num">15,000</td><td class="num">25 gems</td><td class="num">600</td></tr>
+            <tr><td class="highlight">Silver</td><td>Lv 50</td><td class="num">40,000</td><td class="num">50 gems</td><td class="num">800</td></tr>
+            <tr><td class="highlight">Gold</td><td>Lv 100</td><td class="num">100,000</td><td class="num">100 gems</td><td class="num">1,000</td></tr>
+          </tbody>
+        </table>
+        <div class="sub-title">Fill Rate Math</div>
+        <p style="font-size:13px; color:#aaa; line-height:1.6; margin-bottom:12px;">At ~12,500 coins/day earned, 10% = ~1,250 coins/day to piggy bank. Ceramic (5K) fills in ~4 days. Bronze (15K) in ~12 days. Silver (40K) in ~32 days. Gold (100K) in ~80 days.</p>
+      </div>
+
+      <!-- Leaderboards -->
+      <div class="section">
+        <div class="section-title">Leaderboards</div>
+
+        <div class="sub-title">Weekly — La Semana</div>
+        <p style="font-size:12px; color:#888; margin-bottom:8px;">Resets Monday 00:00 UTC | PlayFab: <code>weekly_stars</code> | Tracks stars earned</p>
+        <table class="data-table">
+          <thead><tr><th>Rank</th><th>Reward Name</th><th>Coins</th><th>Gems</th><th>Tickets</th><th>Special</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1st</td><td>Champion</td><td class="num">50,000</td><td class="num">100</td><td class="num">10</td><td>"El Campeon" frame</td></tr>
+            <tr><td class="highlight">2nd-3rd</td><td>Elite</td><td class="num">25,000</td><td class="num">50</td><td class="num">5</td><td>—</td></tr>
+            <tr><td class="highlight">4th-10th</td><td>Top 10</td><td class="num">10,000</td><td class="num">25</td><td class="num">3</td><td>—</td></tr>
+            <tr><td>11th-50th</td><td>Rising Star</td><td class="num">5,000</td><td class="num">10</td><td class="num">2</td><td>—</td></tr>
+            <tr><td>51st-100th</td><td>Competitor</td><td class="num">2,500</td><td class="num">5</td><td class="num">1</td><td>—</td></tr>
+            <tr><td>101st-500th</td><td>Participant</td><td class="num">1,000</td><td>—</td><td class="num">1</td><td>—</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Monthly — El Mes</div>
+        <p style="font-size:12px; color:#888; margin-bottom:8px;">Resets 1st of month 00:00 UTC | PlayFab: <code>monthly_stars</code></p>
+        <table class="data-table">
+          <thead><tr><th>Rank</th><th>Reward Name</th><th>Coins</th><th>Gems</th><th>Tickets</th><th>Special</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1st</td><td>Legendary</td><td class="num">200,000</td><td class="num">500</td><td class="num">25</td><td>Card back + "La Leyenda" title</td></tr>
+            <tr><td class="highlight">2nd-3rd</td><td>Mythic</td><td class="num">100,000</td><td class="num">250</td><td class="num">15</td><td>Exclusive card back</td></tr>
+            <tr><td class="highlight">4th-10th</td><td>Epic</td><td class="num">50,000</td><td class="num">100</td><td class="num">10</td><td>Rare card back</td></tr>
+            <tr><td>11th-25th</td><td>Master</td><td class="num">25,000</td><td class="num">50</td><td class="num">5</td><td>—</td></tr>
+            <tr><td>26th-100th</td><td>Expert</td><td class="num">10,000</td><td class="num">25</td><td class="num">3</td><td>—</td></tr>
+            <tr><td>101st-500th</td><td>Skilled</td><td class="num">5,000</td><td class="num">10</td><td class="num">2</td><td>—</td></tr>
+            <tr><td>501st-1000th</td><td>Dedicated</td><td class="num">2,000</td><td class="num">5</td><td class="num">1</td><td>—</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Season — La Temporada (6-Week Seasons)</div>
+        <p style="font-size:12px; color:#888; margin-bottom:8px;">Manual reset | PlayFab: <code>season_{id}_stars</code></p>
+        <table class="data-table">
+          <thead><tr><th>Rank</th><th>Reward Name</th><th>Coins</th><th>Gems</th><th>Tickets</th><th>Special</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1st</td><td>Seasonal Champion</td><td class="num">500,000</td><td class="num">1,000</td><td class="num">50</td><td>Themed board + avatar + title</td></tr>
+            <tr><td class="highlight">2nd-5th</td><td>Seasonal Elite</td><td class="num">250,000</td><td class="num">500</td><td class="num">30</td><td>Themed board + avatar</td></tr>
+            <tr><td class="highlight">6th-20th</td><td>Seasonal Master</td><td class="num">100,000</td><td class="num">250</td><td class="num">20</td><td>Themed avatar</td></tr>
+            <tr><td>21st-100th</td><td>Seasonal Expert</td><td class="num">50,000</td><td class="num">100</td><td class="num">10</td><td>Profile frame</td></tr>
+            <tr><td>101st-500th</td><td>Seasonal Achiever</td><td class="num">25,000</td><td class="num">50</td><td class="num">5</td><td>Themed badge</td></tr>
+            <tr><td>501st-1000th</td><td>Seasonal Player</td><td class="num">10,000</td><td class="num">25</td><td class="num">3</td><td>—</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Season Themes (Tied to Mexican Holidays)</div>
+        <table class="data-table">
+          <thead><tr><th>Season</th><th>Theme</th><th>Dates</th><th>Visual Style</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1</td><td>Dia de los Reyes</td><td>Jan 1 - Feb 16</td><td>Three Kings, gifts, rosca de reyes</td></tr>
+            <tr><td class="highlight">2</td><td>Carnaval</td><td>Feb 17 - Mar 30</td><td>Carnival masks, confetti, dancers</td></tr>
+            <tr><td class="highlight">3</td><td>Cinco de Mayo</td><td>Mar 31 - May 12</td><td>Battle of Puebla, patriotic colors</td></tr>
+            <tr><td class="highlight">4</td><td>Fiesta de Verano</td><td>May 13 - Sep 30</td><td>Summer fiesta, beach, tropical</td></tr>
+            <tr><td class="highlight">5</td><td>Dia de los Muertos</td><td>Oct 1 - Nov 11</td><td>Altars, marigolds, sugar skulls</td></tr>
+            <tr><td class="highlight">6</td><td>Las Posadas</td><td>Nov 12 - Dec 31</td><td>Nativity, pinatas, ponche</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Season Pass -->
+      <div class="section">
+        <div class="section-title">Season Pass (El Pase de Temporada)</div>
+        <div class="sub-title">Pass Types</div>
+        <table class="data-table">
+          <thead><tr><th>Pass Type</th><th>Cost</th><th>Benefits</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Free Track</td><td>Free</td><td>Basic rewards every level</td></tr>
+            <tr><td class="highlight">Premium</td><td class="num">500 Gems (~$4.99)</td><td>All free rewards + premium rewards</td></tr>
+            <tr><td class="highlight">Premium+</td><td class="num">1,000 Gems (~$9.99)</td><td>Premium + 10 level skip + exclusive cosmetic</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">XP Sources</div>
+        <table class="data-table">
+          <thead><tr><th>Action</th><th>XP Earned</th><th>Daily Limit</th></tr></thead>
+          <tbody>
+            <tr><td>Complete a level</td><td class="num">10 XP</td><td>None</td></tr>
+            <tr><td>Earn 3 stars on a level</td><td class="num">+5 bonus XP</td><td>None</td></tr>
+            <tr><td>First level of the day</td><td class="num">+20 bonus XP</td><td>1</td></tr>
+            <tr><td>Daily challenge complete</td><td class="num">50 XP</td><td>3 challenges</td></tr>
+            <tr><td>Weekly challenge complete</td><td class="num">200 XP</td><td>3 challenges</td></tr>
+            <tr><td>LOCO completion</td><td class="num">15 XP</td><td>None</td></tr>
+            <tr><td>Full board clear</td><td class="num">30 XP</td><td>None</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">XP per Level Curve</div>
+        <div class="mini-stats">
+          <div class="mini-stat"><span class="ms-val">100 XP</span><span class="ms-label">Levels 1-25</span></div>
+          <div class="mini-stat"><span class="ms-val">150 XP</span><span class="ms-label">Levels 26-40</span></div>
+          <div class="mini-stat"><span class="ms-val">200 XP</span><span class="ms-label">Levels 41-50</span></div>
+          <div class="mini-stat"><span class="ms-val">~6,750</span><span class="ms-label">Total XP for completion</span></div>
+        </div>
+
+        <div class="sub-title">Sample Reward Track (Levels 1-10)</div>
+        <table class="data-table">
+          <thead><tr><th>Level</th><th>Free Reward</th><th>Premium Reward</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1</td><td>500 Coins</td><td>+ 1 Extra Spin power-up</td></tr>
+            <tr><td class="highlight">2</td><td>1 Ticket</td><td>+ 5 Gems</td></tr>
+            <tr><td class="highlight">3</td><td>1,000 Coins</td><td>+ 2 Column Wild power-ups</td></tr>
+            <tr><td class="highlight">4</td><td>2 Tickets</td><td>+ 10 Gems</td></tr>
+            <tr><td class="highlight">5</td><td>2,500 Coins</td><td>+ Season Avatar Border</td></tr>
+            <tr><td class="highlight">6</td><td>1 Extra Spin</td><td>+ 15 Gems</td></tr>
+            <tr><td class="highlight">7</td><td>1,500 Coins</td><td>+ 3 Reveal power-ups</td></tr>
+            <tr><td class="highlight">8</td><td>2 Tickets</td><td>+ 20 Gems</td></tr>
+            <tr><td class="highlight">9</td><td>3,000 Coins</td><td>+ 1 Board Wild power-up</td></tr>
+            <tr><td class="highlight">10</td><td>Season Badge</td><td>+ Season Card Back (Exclusive)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Rewarded Ads -->
+      <div class="section">
+        <div class="section-title">Rewarded Ads</div>
+        <table class="data-table">
+          <thead><tr><th>Placement</th><th>Reward</th><th>Daily Limit</th><th>Cooldown</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Free Ticket</td><td>+1 ticket</td><td class="num">3x</td><td>30 min</td></tr>
+            <tr><td class="highlight">Double Coins</td><td>2x level reward</td><td class="num">5x</td><td>Per level</td></tr>
+            <tr><td class="highlight">Free Power-Up</td><td>Random common power-up</td><td class="num">2x</td><td>2 hours</td></tr>
+            <tr><td class="highlight">Coin Bonus</td><td>+500 coins</td><td class="num">10x</td><td>15 min</td></tr>
+            <tr><td class="highlight">Piggy Bank Boost</td><td>+25% capacity bonus</td><td class="num">1x</td><td>24 hours</td></tr>
+          </tbody>
+        </table>
+        <div class="callout pink" style="margin-top: 12px;">
+          <strong>Server-Side Enforcement:</strong>
+          <p>All limits and cooldowns enforced via CloudScript (<code>CanClaimAdReward</code>, <code>ClaimAdReward</code>). Client cannot spoof ad completions.</p>
+        </div>
+      </div>
+
+      <!-- Daily Deals -->
+      <div class="section">
+        <div class="section-title">Daily Deals</div>
+        <table class="data-table">
+          <thead><tr><th>Slot</th><th>Item Type</th><th>Discount</th><th>Refresh</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Deal 1</td><td>Random Power-Up x5</td><td class="num">20-40% off</td><td>Daily 00:00 UTC</td></tr>
+            <tr><td class="highlight">Deal 2</td><td>Coin Pack</td><td class="num">15-30% off</td><td>Daily 00:00 UTC</td></tr>
+            <tr><td class="highlight">Deal 3</td><td>Featured Bundle</td><td class="num">25-50% off</td><td>Daily 00:00 UTC</td></tr>
+            <tr><td class="highlight">Weekly Super</td><td>Premium bundle (Sundays)</td><td class="num">50-60% off</td><td>Every Sunday</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 5: FTUE & ONBOARDING                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-ftue">
+  <div class="overview">
+    <div class="overview-inner">
+
+      <div class="hero" style="padding: 24px 0 32px;">
+        <h2 style="font-size: 36px;">FTUE &amp; ONBOARDING</h2>
+        <div class="tagline">Launch to "I want to play again" in under 5 minutes</div>
+      </div>
+
+      <!-- Design Goal -->
+      <div class="section">
+        <div class="callout pink" style="font-size: 15px; padding: 20px 24px;">
+          <strong>Design Goal:</strong>
+          <p style="font-size: 14px;">Get the player from app launch to "I want to play again" in under 5 minutes. Teach the core loop (spin &rarr; match &rarr; daub &rarr; LOCO) through gameplay, not text. Delay monetisation introduction until the player has experienced a win.</p>
+        </div>
+      </div>
+
+      <!-- First Session Flow -->
+      <div class="section">
+        <div class="section-title">First Session Flow</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">Minute 0-1: Launch &amp; Authentication</div>
+            <div class="timeline-title">App Launch &rarr; Splash Screen (2s) &rarr; Loading &rarr; Silent Guest Login</div>
+            <div class="timeline-desc">No sign-up wall — guest login via PlayFab Custom ID is silent and instant. No name entry (defer to after level 3). No cinematic — story is ambient, not front-loaded.</div>
+          </div>
+          <div class="timeline-item turq">
+            <div class="timeline-time">InitializeNewPlayer CloudScript</div>
+            <div class="timeline-title">Grant starting balance: 5 tickets, 25,000 coins, 5 gems</div>
+            <div class="timeline-desc">World Map (El Mercado) loads with Level 1 highlighted. "Welcome! Tap to play your first game." Auto-enter Level 1 — no need to find the play button.</div>
+          </div>
+          <div class="timeline-item gold">
+            <div class="timeline-time">Minute 1-3: Tutorial Level 1</div>
+            <div class="timeline-title">Learn to Spin &amp; Match (Guided Tooltips)</div>
+            <div class="timeline-desc">5x5 board, 15 spins, no blockers, elevated wild chance. Step-by-step overlay tooltips guide through spinning, matching, wilds, and completing a LOCO.</div>
+          </div>
+          <div class="timeline-item green">
+            <div class="timeline-time">Minute 3-4: Return to World Map</div>
+            <div class="timeline-title">Coin award animation, Level 2 unlocked</div>
+            <div class="timeline-desc">"Nice! You're a natural. Keep going!" — Player taps Level 2.</div>
+          </div>
+          <div class="timeline-item purple">
+            <div class="timeline-time">Minute 4-5: Level 2 (Free Play)</div>
+            <div class="timeline-title">No tooltips — player applies what they learned</div>
+            <div class="timeline-desc">Same generous config. This is the "I understand the game" confirmation moment.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tutorial Progression -->
+      <div class="section">
+        <div class="section-title">Tutorial Progression (Levels 1-5)</div>
+        <table class="data-table">
+          <thead><tr><th>Level</th><th>New Concept</th><th>Teaching Method</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">1</td><td>Spin, match, daub, LOCO</td><td>Guided tooltips (7 steps with dark overlay)</td></tr>
+            <tr><td class="highlight">2</td><td>Free play</td><td>No tooltips — player applies knowledge</td></tr>
+            <tr><td class="highlight">3</td><td>Free Spin symbol</td><td>Tooltip when La Ruleta first appears</td></tr>
+            <tr><td class="highlight">4</td><td>Power-ups</td><td>Free power-up given; tooltip guides usage</td></tr>
+            <tr><td class="highlight">5</td><td>Full board clear</td><td>Board designed to be clearable; jackpot tooltip</td></tr>
+          </tbody>
+        </table>
+        <div class="callout turq" style="margin-top: 12px;">
+          <strong>After Level 5:</strong>
+          <p>Tutorial complete. Display name entry prompt (optional, can skip). Show World Map with El Mercado progress. First daily login reward appears.</p>
+        </div>
+      </div>
+
+      <!-- Guided Tooltip Rules -->
+      <div class="section">
+        <div class="section-title">Guided Tooltip Rules</div>
+        <div class="feature-grid">
+          <div class="feature-card turq">
+            <div class="fc-icon">1&#65039;&#8419;</div>
+            <h3>One at a Time</h3>
+            <p>Maximum 1 tooltip visible at a time. No stacking, no information overload.</p>
+          </div>
+          <div class="feature-card gold">
+            <div class="fc-icon">&#128070;</div>
+            <h3>Action-Dismissed</h3>
+            <p>Tooltip disappears after player acts (not on a timer). No "OK" button — the action itself is the dismissal.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">&#127761;</div>
+            <h3>Dark Overlay</h3>
+            <p>Everything except the target element is dimmed. Player's attention is focused on exactly what matters.</p>
+          </div>
+          <div class="feature-card orange">
+            <div class="fc-icon">&#128161;</div>
+            <h3>Re-Highlight</h3>
+            <p>If the player taps elsewhere, gently re-highlight the target. Never block — guide.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monetisation Timeline -->
+      <div class="section">
+        <div class="section-title">Monetisation Introduction Timeline</div>
+        <div class="callout pink" style="margin-bottom: 16px;">
+          <strong>Critical Rule:</strong>
+          <p>Never show monetisation before the player has won.</p>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Trigger</th><th>What Shows</th><th>When</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">After Level 3</td><td>Nothing yet</td><td>Too early</td></tr>
+            <tr><td class="highlight">After Level 5</td><td>Daily login popup (if applicable)</td><td>First "free stuff" exposure</td></tr>
+            <tr><td class="highlight">Level 6-7</td><td>Extra spin purchase option</td><td>First time running out of spins mid-level</td></tr>
+            <tr><td class="highlight">Level 8-10</td><td>"Continue?" popup (costs coins)</td><td>First time losing a level</td></tr>
+            <tr><td class="highlight">After Level 10</td><td>Store button becomes prominent on World Map</td><td>Player now knows the economy</td></tr>
+            <tr><td class="highlight">Level 12-15</td><td>Ticket gate + gem purchase option</td><td>First time running out of tickets</td></tr>
+            <tr><td class="highlight">After Level 15</td><td>Welcome Offer banner</td><td>Starter Bundle ($2.99) — 72hr window</td></tr>
+          </tbody>
+        </table>
+        <div class="sub-title">Welcome Offer Flow</div>
+        <div class="feature-card gold" style="margin-top: 8px;">
+          <h3>Starter Bundle — $2.99 (60% off)</h3>
+          <p><strong>Trigger:</strong> Complete level 15 (player is invested enough to value it)<br>
+          <strong>Display:</strong> Banner on World Map — "200 gems + 10,000 coins + 10 tickets"<br>
+          <strong>Duration:</strong> 72 hours from first display<br>
+          <strong>A/B Testing:</strong> Variants stored in <code>WelcomeOfferVariants</code> Title Data<br>
+          <strong>Dismiss:</strong> <code>DismissWelcomeOffer</code> CloudScript records it; doesn't show again</p>
+        </div>
+      </div>
+
+      <!-- Economy Drip -->
+      <div class="section">
+        <div class="section-title">Economy Drip (First 15 Levels)</div>
+        <table class="data-table">
+          <thead><tr><th>Level</th><th>TK Spent</th><th>Coins Earned</th><th>Coins Spent</th><th>Running Total</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">Start</td><td>—</td><td>—</td><td>—</td><td>5 TK, 25,000 CN, 5 GM</td></tr>
+            <tr><td class="highlight">1</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 31,500 CN</td></tr>
+            <tr><td class="highlight">2</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 38,000 CN</td></tr>
+            <tr><td class="highlight">3</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 44,500 CN</td></tr>
+            <tr><td class="highlight">4</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0 (free power-up)</td><td>5 TK, 51,000 CN</td></tr>
+            <tr><td class="highlight">5</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 57,500 CN</td></tr>
+            <tr><td class="highlight">6</td><td class="num">1</td><td class="num">4,500</td><td class="num">~1,000</td><td>4 TK, 61,000 CN</td></tr>
+            <tr><td class="highlight">7-10</td><td class="num">4</td><td class="num">~16,000</td><td class="num">~3,000</td><td>0 TK, 74,000 CN</td></tr>
+            <tr><td style="color:#888"><em>Regen wait</em></td><td>—</td><td>—</td><td>—</td><td style="color:#888"><em>2 hrs for 1 TK</em></td></tr>
+            <tr><td class="highlight">11-15</td><td class="num">5</td><td class="num">~17,500</td><td class="num">~5,000</td><td>0 TK, 86,500 CN</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top: 12px;">
+          <strong>Key Moments:</strong>
+          <p><strong>After level 5:</strong> Player feels rich (57,500 coins) — intentional abundance builds goodwill.<br>
+          <strong>Level 10:</strong> First ticket exhaustion — player learns about energy gate.<br>
+          <strong>Level 12-15:</strong> Coin spending starts as power-ups become useful against Diablitos.<br>
+          <strong>After level 15:</strong> Welcome Offer appears when player understands the economy enough to value it.</p>
+        </div>
+      </div>
+
+      <!-- Anti-Friction -->
+      <div class="section">
+        <div class="section-title">Anti-Friction Principles</div>
+        <div class="feature-grid">
+          <div class="feature-card turq">
+            <div class="fc-icon">&#128683;</div>
+            <h3>Never Interrupt Gameplay</h3>
+            <p>All monetisation prompts happen between levels, never during a spin or match sequence.</p>
+          </div>
+          <div class="feature-card green">
+            <div class="fc-icon">&#9989;</div>
+            <h3>Never Require a Purchase</h3>
+            <p>Every level is completable without spending. Spending accelerates but never gates content.</p>
+          </div>
+          <div class="feature-card gold">
+            <div class="fc-icon">&#127873;</div>
+            <h3>Give Before You Ask</h3>
+            <p>Free power-up in Level 4, daily login rewards by Level 5. Players receive value before any monetisation appears.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">&#127903;</div>
+            <h3>Tutorial Levels Are Free</h3>
+            <p>No ticket cost for levels 1-5 (<code>entryCost: 0</code> in CloudScript). Zero barrier to the first session.</p>
+          </div>
+          <div class="feature-card purple">
+            <div class="fc-icon">&#127881;</div>
+            <h3>Celebrate Wins, Soften Losses</h3>
+            <p>Big LOCO animations, confetti, score counters. Quiet "Try Again?" on failure — no shame, no pressure.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 6: TECHNICAL ARCHITECTURE              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-technical">
+  <div class="overview">
+    <div class="overview-inner">
+
+      <div class="hero" style="padding: 24px 0 32px;">
+        <h2 style="font-size: 36px;">TECHNICAL ARCHITECTURE</h2>
+        <div class="tagline">Server-authoritative, anti-cheat by design, 35 CloudScript handlers</div>
+      </div>
+
+      <!-- Architecture Diagram -->
+      <div class="section">
+        <div class="section-title">Architecture Overview</div>
+        <div class="arch-diagram">
+          <div class="arch-box client">
+            <h4>Unity Client</h4>
+            <p style="font-size:11px; color:#888; margin-bottom:8px;">(Display Only)</p>
+            <ul>
+              <li>Animations</li>
+              <li>UI rendering</li>
+              <li>Input handling</li>
+              <li>Local cache</li>
+            </ul>
+          </div>
+          <div class="arch-arrow">&larr; HTTP JSON &rarr;</div>
+          <div class="arch-box server">
+            <h4>PlayFab CloudScript</h4>
+            <p style="font-size:11px; color:#888; margin-bottom:8px;">(All Game Logic)</p>
+            <ul>
+              <li>Board generation</li>
+              <li>RNG (spin results)</li>
+              <li>Score calculation</li>
+              <li>Currency operations</li>
+              <li>Reward grants</li>
+            </ul>
+          </div>
+          <div class="arch-arrow">&darr;</div>
+          <div class="arch-box baas">
+            <h4>PlayFab BaaS</h4>
+            <p style="font-size:11px; color:#888; margin-bottom:8px;">(Managed Services)</p>
+            <ul>
+              <li>Player Auth</li>
+              <li>Economy v2</li>
+              <li>Player Data</li>
+              <li>Leaderboards</li>
+              <li>Analytics</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- CloudScript Handlers -->
+      <div class="section">
+        <div class="section-title">CloudScript Handler Inventory (35 Functions)</div>
+
+        <div class="sub-title">Core Gameplay (7)</div>
+        <table class="data-table">
+          <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>StartLevel</code></td><td>Validate ticket, generate board, create session</td></tr>
+            <tr><td class="highlight"><code>ExecuteSpin</code></td><td>RNG per column, match detection, score update</td></tr>
+            <tr><td class="highlight"><code>SelectWildTarget</code></td><td>Player picks cell for wild card</td></tr>
+            <tr><td class="highlight"><code>CompleteLevel</code></td><td>Final score, stars, coin reward, leaderboard update</td></tr>
+            <tr><td class="highlight"><code>AbandonSession</code></td><td>Clear session without rewards</td></tr>
+            <tr><td class="highlight"><code>GetActiveSession</code></td><td>Reconnection — return current session state</td></tr>
+            <tr><td class="highlight"><code>DebugClearSession</code></td><td>Dev tool to force-clear</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Economy (7)</div>
+        <table class="data-table">
+          <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>InitializeNewPlayer</code></td><td>Grant starting balance (idempotent)</td></tr>
+            <tr><td class="highlight"><code>GetPlayerCurrencies</code></td><td>Read ticket/coin/gem balances</td></tr>
+            <tr><td class="highlight"><code>PurchaseItem</code></td><td>Server-authoritative purchase (never trusts client prices)</td></tr>
+            <tr><td class="highlight"><code>PurchaseExtraSpins</code></td><td>Escalating cost spin purchase during gameplay</td></tr>
+            <tr><td class="highlight"><code>ValidateAndGrantIAP</code></td><td>Receipt validation (App Store + Google Play) + gem grant</td></tr>
+            <tr><td class="highlight"><code>ProcessTicketRegeneration</code></td><td>Time-based ticket grant</td></tr>
+            <tr><td class="highlight"><code>GetTicketStatus</code></td><td>Ticket count + next regen timer</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Engagement (8)</div>
+        <table class="data-table">
+          <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>ClaimDailyLoginReward</code></td><td>7-day cycle reward grant</td></tr>
+            <tr><td class="highlight"><code>GetDailyLoginStatus</code></td><td>Streak, last claim, next reward</td></tr>
+            <tr><td class="highlight"><code>ClaimLeaderboardReward</code></td><td>Weekly/monthly rank rewards</td></tr>
+            <tr><td class="highlight"><code>CheckUnclaimedLeaderboardRewards</code></td><td>Pending rewards check</td></tr>
+            <tr><td class="highlight"><code>GetDailyDeals</code></td><td>Today's discounted items</td></tr>
+            <tr><td class="highlight"><code>GetPiggyBankData</code></td><td>Piggy bank state</td></tr>
+            <tr><td class="highlight"><code>BreakPiggyBank</code></td><td>Spend gems, collect coins</td></tr>
+            <tr><td class="highlight"><code>AddToPiggyBank</code></td><td>Auto-save 10% of earned coins</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Ads (4)</div>
+        <table class="data-table">
+          <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>CanClaimAdReward</code></td><td>Check daily limits + cooldowns</td></tr>
+            <tr><td class="highlight"><code>ClaimAdReward</code></td><td>Grant reward with server-side enforcement</td></tr>
+            <tr><td class="highlight"><code>GetAdCooldownStatus</code></td><td>Per-placement cooldown timers</td></tr>
+            <tr><td class="highlight"><code>GetAdClaimStatus</code></td><td>Daily claim counts</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Welcome Offer (3)</div>
+        <table class="data-table">
+          <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>GetWelcomeOffer</code></td><td>Return A/B variant</td></tr>
+            <tr><td class="highlight"><code>PurchaseWelcomeOffer</code></td><td>Process bundle purchase</td></tr>
+            <tr><td class="highlight"><code>DismissWelcomeOffer</code></td><td>Record dismissal</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Challenges &amp; Season Pass (6)</div>
+        <table class="data-table">
+          <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>GetDailyChallenges</code></td><td>Today's challenges + progress</td></tr>
+            <tr><td class="highlight"><code>GetWeeklyChallenges</code></td><td>This week's challenges</td></tr>
+            <tr><td class="highlight"><code>UpdateChallengeProgress</code></td><td>Increment counters</td></tr>
+            <tr><td class="highlight"><code>ClaimChallengeReward</code></td><td>Grant challenge reward</td></tr>
+            <tr><td class="highlight"><code>GetSeasonPassStatus</code></td><td>Level, XP, rewards</td></tr>
+            <tr><td class="highlight"><code>ClaimSeasonPassReward</code></td><td>Claim free/premium reward</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Unity Client Structure -->
+      <div class="section">
+        <div class="section-title">Unity Client Structure</div>
+
+        <div class="sub-title">Namespace Structure</div>
+        <table class="data-table">
+          <thead><tr><th>Namespace</th><th>Purpose</th><th>Key Classes</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>LotoLoco.Core</code></td><td>Core systems</td><td><code>GameManager</code>, <code>SaveManager</code>, <code>AudioManager</code>, <code>GameBootstrap</code></td></tr>
+            <tr><td class="highlight"><code>LotoLoco.Gameplay</code></td><td>Gameplay logic</td><td><code>GameplayController</code>, <code>BoardVisual</code>, <code>ReelVisual</code>, <code>ScoreManager</code></td></tr>
+            <tr><td class="highlight"><code>LotoLoco.PlayFabIntegration</code></td><td>Server comms</td><td><code>CloudScriptService</code>, <code>PlayFabAuthManager</code>, <code>PlayFabGameManager</code></td></tr>
+            <tr><td class="highlight"><code>LotoLoco.Data</code></td><td>Data classes</td><td><code>LevelData</code>, <code>CardDefinition</code>, <code>CardPackData</code>, <code>PowerUpData</code></td></tr>
+            <tr><td class="highlight"><code>LotoLoco.UI</code></td><td>UI controllers</td><td><code>GameplayUIController</code>, <code>WorldMapController</code>, <code>StoreUIController</code></td></tr>
+            <tr><td class="highlight"><code>LotoLoco.Editor</code></td><td>Editor tools</td><td><code>LevelDataGenerator</code>, <code>CardPackGenerator</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Scene Structure</div>
+        <table class="data-table">
+          <thead><tr><th>Scene</th><th>Purpose</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>Loading</code></td><td>Splash, asset preload, PlayFab connect</td><td><span class="status done">Built</span></td></tr>
+            <tr><td class="highlight"><code>WorldMap</code></td><td>Level selection, currency display, navigation</td><td><span class="status done">Built</span></td></tr>
+            <tr><td class="highlight"><code>Gameplay</code></td><td>Core game — board, reels, HUD</td><td><span class="status done">Built</span></td></tr>
+            <tr><td class="highlight"><code>Store</code></td><td>Store UI</td><td><span class="status missing">Missing</span></td></tr>
+            <tr><td class="highlight"><code>MainMenu</code></td><td>Main menu</td><td><span class="status missing">Missing</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Data Model -->
+      <div class="section">
+        <div class="section-title">Data Model</div>
+
+        <div class="sub-title">PlayFab Player Data (Key-Value Store)</div>
+        <table class="data-table">
+          <thead><tr><th>Key</th><th>Type</th><th>Example</th><th>Written By</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>Progress</code></td><td>JSON</td><td style="font-size:11px"><code>{"currentLevel":15,"totalStars":42}</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>LastTicketRegenTime</code></td><td>Timestamp</td><td><code>1709500000000</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>DailyLoginStreak</code></td><td>Integer</td><td><code>5</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>LastLoginDate</code></td><td>Date</td><td><code>"2026-03-03"</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>PiggyBankCoins</code></td><td>Integer</td><td><code>12500</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>PiggyBankTier</code></td><td>String</td><td><code>"bronze"</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>AdWatchData</code></td><td>JSON</td><td style="font-size:11px"><code>{"FreeTicket":{"claims":2}}</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>SeasonPassXP</code></td><td>Integer</td><td><code>1250</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>SeasonPassLevel</code></td><td>Integer</td><td><code>8</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>ChallengeProgress</code></td><td>JSON</td><td>Daily/weekly counters</td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>LeaderboardRewards</code></td><td>JSON</td><td>Pending unclaimed</td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>WelcomeOfferStatus</code></td><td>JSON</td><td style="font-size:11px"><code>{"variant":"A","dismissed":false}</code></td><td>CloudScript</td></tr>
+            <tr><td class="highlight"><code>PurchasedTransactionIds</code></td><td>JSON</td><td>Receipt IDs array</td><td>CloudScript</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">PlayFab Economy v2 Items</div>
+        <table class="data-table">
+          <thead><tr><th>Item</th><th>ID (Prefix)</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td>Tickets</td><td><code>a8969912-...</code></td><td>Virtual Currency</td></tr>
+            <tr><td>Coins</td><td><code>da74ff4b-...</code></td><td>Virtual Currency</td></tr>
+            <tr><td>Gems</td><td><code>1013292e-...</code></td><td>Virtual Currency</td></tr>
+            <tr><td>Power-ups</td><td><code>powerup_*</code></td><td>Inventory Items</td></tr>
+            <tr><td>Gem packs</td><td><code>gem_pack_*</code></td><td>Store Items</td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-title">Leaderboard Definitions</div>
+        <table class="data-table">
+          <thead><tr><th>Leaderboard</th><th>Reset</th><th>Statistic</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight"><code>weekly_stars</code></td><td>Monday 00:00 UTC</td><td>Stars earned that week</td></tr>
+            <tr><td class="highlight"><code>monthly_stars</code></td><td>1st of month 00:00 UTC</td><td>Stars earned that month</td></tr>
+            <tr><td class="highlight"><code>season_current_stars</code></td><td>Manual (6-week season)</td><td>Stars earned that season</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Anti-Cheat -->
+      <div class="section">
+        <div class="section-title">Anti-Cheat Measures</div>
+        <table class="data-table">
+          <thead><tr><th>Attack Vector</th><th>Prevention</th></tr></thead>
+          <tbody>
+            <tr><td>Score manipulation</td><td>Score calculated server-side only</td></tr>
+            <tr><td>Currency injection</td><td>All currency ops through CloudScript Server API</td></tr>
+            <tr><td>Board manipulation</td><td>Board generated and stored server-side</td></tr>
+            <tr><td>RNG prediction</td><td>RNG runs server-side, never exposed to client</td></tr>
+            <tr><td>Clock exploit (tickets)</td><td>Ticket regen uses server timestamp</td></tr>
+            <tr><td>IAP spoofing</td><td>Receipt validation against App Store / Google Play</td></tr>
+            <tr><td>Replay attacks</td><td><code>PurchasedTransactionIds</code> tracks processed receipts</td></tr>
+            <tr><td>Session hijacking</td><td>PlayFab session tokens + 1 hour timeout</td></tr>
+            <tr><td>Rate limiting</td><td><code>MIN_SPIN_INTERVAL_MS</code> (1 second between spins)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Third-Party SDKs -->
+      <div class="section">
+        <div class="section-title">Third-Party SDKs</div>
+        <table class="data-table">
+          <thead><tr><th>SDK</th><th>Purpose</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="highlight">PlayFab SDK</td><td>Backend services</td><td><span class="status done">Integrated</span></td></tr>
+            <tr><td class="highlight">Unity IAP (Purchasing 5.x)</td><td>App Store / Google Play purchases</td><td><span class="status done">Integrated</span></td></tr>
+            <tr><td class="highlight">Unity LevelPlay (ironSource)</td><td>Rewarded video ads</td><td><span class="status partial">Scaffolded</span></td></tr>
+            <tr><td class="highlight">Sentry</td><td>Error tracking</td><td><span class="status done">Integrated</span></td></tr>
+            <tr><td class="highlight">RevenueCat</td><td>Subscription management</td><td><span class="status missing">Not started</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB 7: GAME PLAYGROUND                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-playground">
+  <div class="main">
+    <div class="controls">
+      <div class="control-group">
+        <label>Presets</label>
+        <div class="presets">
+          <button class="preset-btn active" onclick="applyPreset('tutorial')">Tutorial</button>
+          <button class="preset-btn" onclick="applyPreset('easy')">Easy</button>
+          <button class="preset-btn" onclick="applyPreset('medium')">Medium</button>
+          <button class="preset-btn" onclick="applyPreset('hard')">Hard</button>
+          <button class="preset-btn" onclick="applyPreset('vhard')">V.Hard</button>
+          <button class="preset-btn" onclick="applyPreset('expert')">Expert</button>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="control-group">
+        <label>Board Size <span class="range-val" id="boardSizeVal">5x5</span></label>
+        <select id="boardSize" onchange="state.boardSize=+this.value;updateAll();newGame()">
+          <option value="5">5x5 (25 cards)</option>
+          <option value="6">6x6 (36 cards)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Spins <span class="range-val" id="spinsVal">15</span></label>
+        <input type="range" id="spins" min="5" max="20" value="15" oninput="state.spinsGiven=+this.value;document.getElementById('spinsVal').textContent=this.value;updatePrompt()">
+      </div>
+      <hr class="divider">
+      <div class="control-group">
+        <label>Column Wild % <span class="range-val" id="wildVal">5.0%</span></label>
+        <input type="range" id="wildChance" min="0" max="15" step="0.5" value="5" oninput="state.jokerChance=+this.value/100;document.getElementById('wildVal').textContent=this.value+'%';updatePrompt()">
+      </div>
+      <div class="control-group">
+        <label>Board Wild % <span class="range-val" id="superWildVal">1.5%</span></label>
+        <input type="range" id="superWildChance" min="0" max="5" step="0.5" value="1.5" oninput="state.superJokerChance=+this.value/100;document.getElementById('superWildVal').textContent=this.value+'%';updatePrompt()">
+      </div>
+      <div class="control-group">
+        <label>Free Spin % <span class="range-val" id="freeSpinVal">2.0%</span></label>
+        <input type="range" id="freeSpinChance" min="0" max="5" step="0.5" value="2" oninput="state.freeSpinChance=+this.value/100;document.getElementById('freeSpinVal').textContent=this.value+'%';updatePrompt()">
+      </div>
+      <div class="control-group">
+        <label>Blocker % <span class="range-val" id="blockerVal">0.0%</span></label>
+        <input type="range" id="blockerChance" min="0" max="10" step="0.5" value="0" oninput="state.diablitChance=+this.value/100;document.getElementById('blockerVal').textContent=this.value+'%';updatePrompt()">
+      </div>
+      <hr class="divider">
+      <div class="control-group">
+        <label>Locked Cells <span class="range-val" id="lockedVal">0</span></label>
+        <input type="range" id="lockedCells" min="0" max="8" value="0" oninput="state.lockedCells=+this.value;document.getElementById('lockedVal').textContent=this.value;updatePrompt()">
+      </div>
+      <div class="control-group">
+        <label>Multiplier Cells <span class="range-val" id="multiVal">0</span></label>
+        <input type="range" id="multiplierCells" min="0" max="6" value="0" oninput="state.multiplierCells=+this.value;document.getElementById('multiVal').textContent=this.value;updatePrompt()">
+      </div>
+      <hr class="divider">
+      <div class="control-group">
+        <label>Board Bias % <span class="range-val" id="biasVal">60%</span></label>
+        <input type="range" id="boardBias" min="0" max="100" step="5" value="60" oninput="state.boardBias=+this.value/100;document.getElementById('biasVal').textContent=this.value+'%';updatePrompt()">
+      </div>
+      <div class="control-group">
+        <label>Auto-Wild</label>
+        <select id="autoWild" onchange="state.autoWild=this.value==='true';updatePrompt()">
+          <option value="true">Auto-pick best cell</option>
+          <option value="false">Player chooses</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="game-area">
+      <div class="stats-bar">
+        <div class="stat spins"><span class="icon">&#127920;</span> Spins: <span class="val" id="spinsLeft">15</span></div>
+        <div class="stat score"><span class="icon">&#11088;</span> Score: <span class="val" id="scoreDisplay">0</span></div>
+        <div class="stat"><span class="icon">&#9989;</span> LOCOs: <span class="val" id="locoCount">0</span></div>
+        <div class="stat"><span class="icon">&#128202;</span> Matches: <span class="val" id="matchCount">0</span></div>
+        <div class="stars" id="starsDisplay">
+          <span class="star" id="star1">&#9733;</span><span class="star" id="star2">&#9733;</span><span class="star" id="star3">&#9733;</span>
+        </div>
+        <button class="new-game-btn" onclick="newGame()">New Game</button>
+      </div>
+      <div class="col-headers" id="colHeaders"></div>
+      <div class="board" id="board"></div>
+      <div class="reels-container" id="reels"></div>
+      <button class="spin-btn" id="spinBtn" onclick="doSpin()">SPIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: ECONOMY SIMULATOR                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-econsim">
+  <div class="econsim">
+    <!-- LEFT: Controls -->
+    <div class="econsim-controls">
+      <div class="es-section">
+        <div class="es-section-title">Player Archetype</div>
+        <div class="es-preset-row">
+          <button class="es-preset active" onclick="esApplyPreset('f2p',this)">F2P Pure</button>
+          <button class="es-preset" onclick="esApplyPreset('f2p_ads',this)">F2P + Ads</button>
+          <button class="es-preset" onclick="esApplyPreset('minnow',this)">Minnow</button>
+          <button class="es-preset" onclick="esApplyPreset('dolphin',this)">Dolphin</button>
+          <button class="es-preset" onclick="esApplyPreset('whale',this)">Whale</button>
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Revenue Toggles</div>
+        <div class="es-toggle-row">
+          <label>Daily Login Rewards</label>
+          <label class="es-toggle"><input type="checkbox" id="esToggleLogin" checked onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+        <div class="es-toggle-row">
+          <label>Ad Rewards</label>
+          <label class="es-toggle"><input type="checkbox" id="esToggleAds" onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+        <div class="es-toggle-row">
+          <label>IAP (Gem Purchases)</label>
+          <label class="es-toggle"><input type="checkbox" id="esToggleIAP" onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+        <div class="es-toggle-row">
+          <label>Piggy Bank</label>
+          <label class="es-toggle"><input type="checkbox" id="esTogglePiggy" checked onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+        <div class="es-toggle-row">
+          <label>Leaderboard Rewards</label>
+          <label class="es-toggle"><input type="checkbox" id="esToggleLeaderboard" onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+        <div class="es-toggle-row">
+          <label>Partial Failure Rewards</label>
+          <label class="es-toggle"><input type="checkbox" id="esToggleFailReward" onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Starting Balances</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Tickets</label><span class="es-val" id="esStartTicketsVal">5</span></div>
+          <input type="range" id="esStartTickets" min="1" max="20" value="5" oninput="document.getElementById('esStartTicketsVal').textContent=this.value">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Coins</label><span class="es-val" id="esStartCoinsVal">25,000</span></div>
+          <input type="range" id="esStartCoins" min="0" max="100000" step="5000" value="25000" oninput="document.getElementById('esStartCoinsVal').textContent=Number(this.value).toLocaleString()">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Gems</label><span class="es-val" id="esStartGemsVal">5</span></div>
+          <input type="range" id="esStartGems" min="0" max="100" value="5" oninput="document.getElementById('esStartGemsVal').textContent=this.value">
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Ticket Economy</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Regen Interval (hours)</label><span class="es-val" id="esRegenHoursVal">2</span></div>
+          <input type="range" id="esRegenHours" min="1" max="6" step="0.5" value="2" oninput="document.getElementById('esRegenHoursVal').textContent=this.value">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Max Free Tickets</label><span class="es-val" id="esMaxTicketsVal">5</span></div>
+          <input type="range" id="esMaxTickets" min="3" max="10" value="5" oninput="document.getElementById('esMaxTicketsVal').textContent=this.value">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Play Hours / Day</label><span class="es-val" id="esPlayHoursVal">10</span></div>
+          <input type="range" id="esPlayHours" min="4" max="16" value="10" oninput="document.getElementById('esPlayHoursVal').textContent=this.value">
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Difficulty &amp; Fail Rates</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Tutorial Fail %</label><span class="es-val" id="esFailTutVal">0%</span></div>
+          <input type="range" id="esFailTut" min="0" max="30" value="0" oninput="document.getElementById('esFailTutVal').textContent=this.value+'%'">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Easy Fail %</label><span class="es-val" id="esFailEasyVal">10%</span></div>
+          <input type="range" id="esFailEasy" min="0" max="50" value="10" oninput="document.getElementById('esFailEasyVal').textContent=this.value+'%'">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Medium Fail %</label><span class="es-val" id="esFailMedVal">20%</span></div>
+          <input type="range" id="esFailMed" min="0" max="60" value="20" oninput="document.getElementById('esFailMedVal').textContent=this.value+'%'">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Hard Fail %</label><span class="es-val" id="esFailHardVal">30%</span></div>
+          <input type="range" id="esFailHard" min="0" max="70" value="30" oninput="document.getElementById('esFailHardVal').textContent=this.value+'%'">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Very Hard Fail %</label><span class="es-val" id="esFailVHVal">40%</span></div>
+          <input type="range" id="esFailVH" min="0" max="80" value="40" oninput="document.getElementById('esFailVHVal').textContent=this.value+'%'">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Expert Fail %</label><span class="es-val" id="esFailExpVal">50%</span></div>
+          <input type="range" id="esFailExp" min="0" max="90" value="50" oninput="document.getElementById('esFailExpVal').textContent=this.value+'%'">
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Spending Behavior</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Power-ups / Level</label><span class="es-val" id="esPowerupsVal">1.0</span></div>
+          <input type="range" id="esPowerups" min="0" max="3" step="0.1" value="1" oninput="document.getElementById('esPowerupsVal').textContent=Number(this.value).toFixed(1)">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Avg Power-up Cost</label><span class="es-val" id="esPowerupCostVal">1,750</span></div>
+          <input type="range" id="esPowerupCost" min="500" max="4000" step="250" value="1750" oninput="document.getElementById('esPowerupCostVal').textContent=Number(this.value).toLocaleString()">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Extra Spins / Level</label><span class="es-val" id="esExtraSpinsVal">0.5</span></div>
+          <input type="range" id="esExtraSpins" min="0" max="2" step="0.1" value="0.5" oninput="document.getElementById('esExtraSpinsVal').textContent=Number(this.value).toFixed(1)">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Avg Extra Spin Cost</label><span class="es-val" id="esExtraSpinCostVal">1,500</span></div>
+          <input type="range" id="esExtraSpinCost" min="1000" max="10000" step="500" value="1500" oninput="document.getElementById('esExtraSpinCostVal').textContent=Number(this.value).toLocaleString()">
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Ad Behavior (when enabled)</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Ticket Ads / Day</label><span class="es-val" id="esAdTicketsVal">1.5</span></div>
+          <input type="range" id="esAdTickets" min="0" max="3" step="0.5" value="1.5" oninput="document.getElementById('esAdTicketsVal').textContent=Number(this.value).toFixed(1)">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Coin Ads / Day</label><span class="es-val" id="esAdCoinsVal">3</span></div>
+          <input type="range" id="esAdCoins" min="0" max="10" value="3" oninput="document.getElementById('esAdCoinsVal').textContent=this.value">
+        </div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Double Coin Ads / Day</label><span class="es-val" id="esAdDoubleVal">1</span></div>
+          <input type="range" id="esAdDouble" min="0" max="5" value="1" oninput="document.getElementById('esAdDoubleVal').textContent=this.value">
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">IAP Behavior (when enabled)</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>Monthly Spend ($)</label><span class="es-val" id="esIAPSpendVal">$0</span></div>
+          <input type="range" id="esIAPSpend" min="0" max="200" step="5" value="0" oninput="document.getElementById('esIAPSpendVal').textContent='$'+this.value">
+        </div>
+        <div class="es-toggle-row">
+          <label>Bought Starter Bundle</label>
+          <label class="es-toggle"><input type="checkbox" id="esStarterBundle" onchange="esRunSim()"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="es-section">
+        <div class="es-section-title">Failure Reward (when enabled)</div>
+        <div class="es-param">
+          <div class="es-param-header"><label>% of Level Reward on Fail</label><span class="es-val" id="esFailRewardPctVal">25%</span></div>
+          <input type="range" id="esFailRewardPct" min="0" max="75" step="5" value="25" oninput="document.getElementById('esFailRewardPctVal').textContent=this.value+'%'">
+        </div>
+      </div>
+
+      <button class="es-run-btn" onclick="esRunSim()">RUN SIMULATION</button>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="econsim-results" id="esResults">
+      <div style="text-align:center;padding:80px 20px;color:#666;">
+        <div style="font-size:48px;margin-bottom:16px;">📊</div>
+        <div style="font-size:18px;color:#888;">Click <strong>RUN SIMULATION</strong> to see results</div>
+        <div style="font-size:13px;margin-top:8px;">Adjust parameters on the left, then run</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loco-banner" id="locoBanner">&#161;LOCO!</div>
+<div class="game-over" id="gameOver">
+  <h2>&#161;Nivel Completo!</h2>
+  <div class="final-score" id="finalScore"></div>
+  <div class="final-stars" id="finalStars"></div>
+  <button class="spin-btn" onclick="document.getElementById('gameOver').classList.remove('show');newGame()">PLAY AGAIN</button>
+</div>
+<div class="log" id="log"></div>
+<div class="prompt-section">
+  <span class="prompt-text" id="promptText"></span>
+  <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+</div>
+
+<script>
+// ── Tab switching ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  // Show/hide playground-only elements
+  const isPlayground = name === 'playground';
+  document.getElementById('log').style.display = isPlayground ? 'block' : 'none';
+  document.querySelector('.prompt-section').style.display = isPlayground ? 'flex' : 'none';
+}
+
+// ── Card names ──
+const CARD_NAMES = {
+  1:'El Gallo',2:'El Diablito',3:'La Dama',4:'El Catrin',5:'El Paraguas',
+  6:'La Sirena',7:'La Escalera',8:'La Botella',9:'El Barril',10:'El Arbol',
+  11:'El Melon',12:'El Valiente',13:'El Gorrito',14:'La Muerte',15:'La Pera',
+  16:'La Bandera',17:'El Bandolon',18:'El Violoncello',19:'La Garza',20:'El Pajaro',
+  21:'La Mano',22:'La Bota',23:'La Luna',24:'El Cotorro',25:'El Borracho',
+  26:'El Negrito',27:'El Corazon',28:'La Sandia',29:'El Tambor',30:'El Camaron',
+  31:'Las Jaras',32:'El Musico',33:'La Arana',34:'El Soldado',35:'La Estrella',
+  36:'El Cazo',37:'El Mundo',38:'El Apache',39:'El Nopal',40:'El Alacran',
+  41:'La Rosa',42:'La Calavera',43:'La Campana',44:'El Cantarito',45:'El Venado',
+  46:'El Sol',47:'La Corona',48:'La Chalupa',49:'El Pino',50:'El Pescado',
+  51:'La Palma',52:'La Maceta',53:'El Arpa',54:'La Rana',
+  55:'El Cactus',56:'El Jaguar',57:'La Mariposa',58:'El Quetzal',59:'La Pinata',60:'El Tequila',
+  61:'El Aguila',62:'La Guitarra',63:'El Mariachi',64:'La Catrina',65:'El Alebrije',
+  66:'La Veladora',67:'El Sarape',68:'La Tortilla',69:'El Chile',70:'La Margarita',
+  71:'El Sombrero',72:'La Hamaca',73:'El Volcan',74:'La Ofrenda',75:'El Cenote',
+  76:'El Comodin',77:'El Sol Dorado',78:'El Diablito',79:'La Ruleta',
+  80:'La Piramide',81:'El Cenzontle',82:'La Dalia',83:'El Coyote',84:'La Iguana',
+  85:'El Tlacuache',86:'La Guacamaya',87:'El Armadillo',88:'La Pitaya',89:'El Ajolote',90:'La Vainilla'
+};
+
+const SPECIAL = { JOKER:76, SUPER_JOKER:77, DEVIL:78, FREE_SPIN:79 };
+const POINTS = { PER_MATCH:50, PER_LOCO:1000, PER_SPIN_REMAINING:100, FULL_CLEAR_BONUS:5000 };
+const COLUMN_RANGES_5 = { 0:{min:1,max:15}, 1:{min:16,max:30}, 2:{min:31,max:45}, 3:{min:46,max:60}, 4:{min:61,max:75} };
+const COLUMN_RANGES_6 = { 0:{min:1,max:15}, 1:{min:16,max:30}, 2:{min:31,max:45}, 3:{min:46,max:60}, 4:{min:61,max:75}, 5:{min:76,max:90} };
+const LOCO_LETTERS_5 = ['L','O','T','O','!'];
+const LOCO_LETTERS_6 = ['L','O','T','O','C','O'];
+
+const DEFAULTS = { boardSize:5, spinsGiven:15, jokerChance:0.05, superJokerChance:0.015, freeSpinChance:0.02, diablitChance:0, lockedCells:0, multiplierCells:0, boardBias:0.6, autoWild:true };
+let state = { ...DEFAULTS };
+let game = null;
+
+const PRESETS = {
+  tutorial: { boardSize:5, spinsGiven:15, jokerChance:0.05, superJokerChance:0.015, freeSpinChance:0.02, diablitChance:0, lockedCells:0, multiplierCells:0 },
+  easy:    { boardSize:5, spinsGiven:12, jokerChance:0.04, superJokerChance:0.01, freeSpinChance:0.02, diablitChance:0, lockedCells:0, multiplierCells:0 },
+  medium:  { boardSize:5, spinsGiven:10, jokerChance:0.04, superJokerChance:0.01, freeSpinChance:0.015, diablitChance:0.02, lockedCells:2, multiplierCells:0 },
+  hard:    { boardSize:5, spinsGiven:10, jokerChance:0.045, superJokerChance:0.01, freeSpinChance:0.02, diablitChance:0.03, lockedCells:3, multiplierCells:1 },
+  vhard:   { boardSize:6, spinsGiven:11, jokerChance:0.04, superJokerChance:0.01, freeSpinChance:0.015, diablitChance:0.035, lockedCells:4, multiplierCells:2 },
+  expert:  { boardSize:6, spinsGiven:10, jokerChance:0.04, superJokerChance:0.01, freeSpinChance:0.015, diablitChance:0.04, lockedCells:5, multiplierCells:3 },
+};
+
+function applyPreset(name) {
+  Object.assign(state, PRESETS[name]);
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  syncControls(); newGame();
+}
+
+function syncControls() {
+  document.getElementById('boardSize').value = state.boardSize;
+  document.getElementById('boardSizeVal').textContent = state.boardSize + 'x' + state.boardSize;
+  document.getElementById('spins').value = state.spinsGiven;
+  document.getElementById('spinsVal').textContent = state.spinsGiven;
+  document.getElementById('wildChance').value = state.jokerChance * 100;
+  document.getElementById('wildVal').textContent = (state.jokerChance * 100).toFixed(1) + '%';
+  document.getElementById('superWildChance').value = state.superJokerChance * 100;
+  document.getElementById('superWildVal').textContent = (state.superJokerChance * 100).toFixed(1) + '%';
+  document.getElementById('freeSpinChance').value = state.freeSpinChance * 100;
+  document.getElementById('freeSpinVal').textContent = (state.freeSpinChance * 100).toFixed(1) + '%';
+  document.getElementById('blockerChance').value = state.diablitChance * 100;
+  document.getElementById('blockerVal').textContent = (state.diablitChance * 100).toFixed(1) + '%';
+  document.getElementById('lockedCells').value = state.lockedCells;
+  document.getElementById('lockedVal').textContent = state.lockedCells;
+  document.getElementById('multiplierCells').value = state.multiplierCells;
+  document.getElementById('multiVal').textContent = state.multiplierCells;
+  document.getElementById('boardBias').value = state.boardBias * 100;
+  document.getElementById('biasVal').textContent = (state.boardBias * 100) + '%';
+  updatePrompt();
+}
+
+function getColumnRange(col, size) { return (size === 6 ? COLUMN_RANGES_6 : COLUMN_RANGES_5)[col] || {min:1,max:15}; }
+
+function generateBoard(size) {
+  const board = Array.from({length:size}, () => []);
+  for (let col = 0; col < size; col++) {
+    const range = getColumnRange(col, size);
+    const pool = []; for (let i = range.min; i <= range.max; i++) pool.push(i);
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+    for (let row = 0; row < size; row++) board[row][col] = pool[row];
+  }
+  return board;
+}
+
+function placeSpecialCells(size, lc, mc) {
+  const locked = new Set(), multi = new Set(), all = [];
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) all.push(r*size+c);
+  for (let i = all.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+  let idx = 0;
+  for (let i = 0; i < lc && idx < all.length; i++, idx++) locked.add(all[idx]);
+  for (let i = 0; i < mc && idx < all.length; i++, idx++) multi.add(all[idx]);
+  return { locked, multi };
+}
+
+function generateReelResults() {
+  const results = [], t1 = state.diablitChance, t2 = t1+state.jokerChance, t3 = t2+state.superJokerChance, t4 = t3+state.freeSpinChance;
+  for (let col = 0; col < game.size; col++) {
+    const roll = Math.random();
+    if (roll < t1) { results.push(SPECIAL.DEVIL); continue; }
+    if (roll < t2) { results.push(SPECIAL.JOKER); continue; }
+    if (roll < t3) { results.push(SPECIAL.SUPER_JOKER); continue; }
+    if (roll < t4) { results.push(SPECIAL.FREE_SPIN); continue; }
+    if (Math.random() < state.boardBias) { results.push(game.board[Math.floor(Math.random()*game.size)][col]); }
+    else { const range = getColumnRange(col, game.size); results.push(Math.floor(Math.random()*(range.max-range.min+1))+range.min); }
+  }
+  return results;
+}
+
+function detectNewLocos() {
+  const s = game.size, nl = [];
+  for (let r = 0; r < s; r++) { if (!game.completedLocos.has('r'+r) && game.marked[r].every(Boolean)) { game.completedLocos.add('r'+r); nl.push({type:'row',idx:r}); } }
+  for (let c = 0; c < s; c++) { if (game.completedLocos.has('c'+c)) continue; let ok=true; for (let r=0;r<s;r++) if(!game.marked[r][c]){ok=false;break;} if(ok){game.completedLocos.add('c'+c);nl.push({type:'col',idx:c});} }
+  if (!game.completedLocos.has('d0')) { let ok=true; for(let i=0;i<s;i++) if(!game.marked[i][i]){ok=false;break;} if(ok){game.completedLocos.add('d0');nl.push({type:'diag',idx:0});} }
+  if (!game.completedLocos.has('d1')) { let ok=true; for(let i=0;i<s;i++) if(!game.marked[i][s-1-i]){ok=false;break;} if(ok){game.completedLocos.add('d1');nl.push({type:'diag',idx:1});} }
+  return nl;
+}
+
+function getCellsForLoco(l) {
+  const s=game.size, c=[];
+  if(l.type==='row') for(let x=0;x<s;x++) c.push([l.idx,x]);
+  if(l.type==='col') for(let x=0;x<s;x++) c.push([x,l.idx]);
+  if(l.type==='diag'&&l.idx===0) for(let i=0;i<s;i++) c.push([i,i]);
+  if(l.type==='diag'&&l.idx===1) for(let i=0;i<s;i++) c.push([i,s-1-i]);
+  return c;
+}
+
+function newGame() {
+  const size = state.boardSize, board = generateBoard(size), sp = placeSpecialCells(size, state.lockedCells, state.multiplierCells);
+  game = { size, board, marked: Array.from({length:size},()=>Array(size).fill(false)), lockState: Array.from({length:size},()=>Array(size).fill(0)), multiCells: new Set(), spinsLeft: state.spinsGiven, score:0, totalMatches:0, completedLocos: new Set(), pendingWilds:[], spinning:false, over:false, lastResults:null };
+  sp.locked.forEach(idx => { game.lockState[Math.floor(idx/size)][idx%size]=1; });
+  sp.multi.forEach(idx => { game.multiCells.add(idx); });
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('gameOver').classList.remove('show');
+  renderBoard(); renderReels(); updateStats(); updatePrompt();
+}
+
+function markCell(r,c) { if(game.marked[r][c]) return false; if(game.lockState[r][c]===1){game.lockState[r][c]=2;return false;} game.marked[r][c]=true; return true; }
+function isMultiplier(r,c) { return game.multiCells.has(r*game.size+c); }
+
+function doSpin() {
+  if (game.spinning||game.over||game.spinsLeft<=0||game.pendingWilds.length>0) return;
+  game.spinning=true; game.spinsLeft--;
+  const btn=document.getElementById('spinBtn'); btn.disabled=true; btn.classList.add('spinning');
+  const reelEls=document.querySelectorAll('.reel');
+  reelEls.forEach(r=>{r.className='reel spinning';r.textContent='...';});
+  const results=generateReelResults(); game.lastResults=results;
+
+  results.forEach((cardId,col)=>{
+    setTimeout(()=>{
+      const reel=reelEls[col]; reel.classList.remove('spinning');
+      if(cardId===SPECIAL.DEVIL){reel.className='reel blocker';reel.textContent='\uD83D\uDE08 Diablito';addLog('Col '+col+': \uD83D\uDE08 El Diablito (blocked)','blocker');}
+      else if(cardId===SPECIAL.JOKER){reel.className='reel wild';reel.textContent='\uD83C\uDCCF Comodin';addLog('Col '+col+': \uD83C\uDCCF Column Wild','wild');}
+      else if(cardId===SPECIAL.SUPER_JOKER){reel.className='reel wild';reel.textContent='\u2600\uFE0F Sol Dorado';addLog('Col '+col+': \u2600\uFE0F Board Wild!','wild');}
+      else if(cardId===SPECIAL.FREE_SPIN){reel.className='reel freespin';reel.textContent='\uD83C\uDFB0 Ruleta';game.spinsLeft++;addLog('Col '+col+': \uD83C\uDFB0 Free Spin! (+1)','freespin');}
+      else {
+        const name=CARD_NAMES[cardId]||'Card #'+cardId; let matched=false;
+        for(let r=0;r<game.size;r++){
+          if(game.board[r][col]===cardId&&!game.marked[r][col]){
+            const pts=isMultiplier(r,col)?POINTS.PER_MATCH*2:POINTS.PER_MATCH;
+            if(markCell(r,col)){game.score+=pts;game.totalMatches++;matched=true;const el=document.querySelector(`.cell[data-r="${r}"][data-c="${col}"]`);if(el){el.classList.add('marked','just-matched');setTimeout(()=>el.classList.remove('just-matched'),600);}addLog(`Col ${col}: ${name} matched! (+${pts} pts)`,'match');}
+            else{const el=document.querySelector(`.cell[data-r="${r}"][data-c="${col}"]`);if(el){el.classList.add('cracked','just-matched');setTimeout(()=>el.classList.remove('just-matched'),600);}addLog(`Col ${col}: ${name} — lock cracked!`,'match');matched=true;}
+            break;
+          }
+        }
+        reel.className=matched?'reel matched':'reel no-match'; reel.textContent=name;
+        if(!matched) addLog(`Col ${col}: ${name} (no match)`,'');
+      }
+      if(cardId===SPECIAL.JOKER||cardId===SPECIAL.SUPER_JOKER){const isB=cardId===SPECIAL.SUPER_JOKER;if(state.autoWild)autoPickWild(col,isB);else game.pendingWilds.push({col,isBoard:isB});}
+      if(col===game.size-1){
+        setTimeout(()=>{
+          const nl=detectNewLocos(); nl.forEach(loco=>{const hm=getCellsForLoco(loco).some(([r,c])=>isMultiplier(r,c));const pts=hm?POINTS.PER_LOCO*2:POINTS.PER_LOCO;game.score+=pts;addLog(`\xA1LOCO! ${loco.type} ${loco.idx} (+${pts} pts)`,'loco');getCellsForLoco(loco).forEach(([r,c])=>{const el=document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);if(el){el.classList.add('loco-cell');setTimeout(()=>el.classList.remove('loco-cell'),1000);}});showLocoBanner();});
+          if(game.marked.every(row=>row.every(Boolean))){game.score+=POINTS.FULL_CLEAR_BONUS;addLog('\uD83C\uDF89 FULL CLEAR! (+5,000 pts)','loco');}
+          if(game.pendingWilds.length>0)showWildSelection();
+          game.spinning=false;btn.classList.remove('spinning');updateStats();
+          if(game.spinsLeft<=0&&game.pendingWilds.length===0)endGame();else btn.disabled=game.pendingWilds.length>0;
+          updatePrompt();
+        },200);
+      }
+    },300+col*350);
+  });
+}
+
+function autoPickWild(col,isBoard){
+  let bestRow=-1,bestCol=col;
+  if(isBoard){let bs=-1;for(let r=0;r<game.size;r++)for(let c=0;c<game.size;c++){if(game.marked[r][c])continue;let s=0;for(let x=0;x<game.size;x++){if(game.marked[r][x])s++;if(game.marked[x][c])s++;}if(r===c)for(let x=0;x<game.size;x++)if(game.marked[x][x])s++;if(r+c===game.size-1)for(let x=0;x<game.size;x++)if(game.marked[x][game.size-1-x])s++;if(s>bs){bs=s;bestRow=r;bestCol=c;}}}
+  else{let bs=-1;for(let r=0;r<game.size;r++){if(game.marked[r][col])continue;let s=0;for(let x=0;x<game.size;x++)if(game.marked[r][x])s++;if(s>bs){bs=s;bestRow=r;}}}
+  if(bestRow>=0){const pts=isMultiplier(bestRow,bestCol)?POINTS.PER_MATCH*2:POINTS.PER_MATCH;if(markCell(bestRow,bestCol)){game.score+=pts;game.totalMatches++;const el=document.querySelector(`.cell[data-r="${bestRow}"][data-c="${bestCol}"]`);if(el){el.classList.add('marked','just-matched');setTimeout(()=>el.classList.remove('just-matched'),600);}addLog(`Wild -> ${CARD_NAMES[game.board[bestRow][bestCol]]} (+${pts})`,'wild');}}
+}
+
+function showWildSelection(){const w=game.pendingWilds[0];document.querySelectorAll('.cell').forEach(el=>{const r=+el.dataset.r,c=+el.dataset.c;if(game.marked[r][c])return;if(!w.isBoard&&c!==w.col)return;el.classList.add('wild-target');el.onclick=()=>selectWildTarget(r,c);});}
+
+function selectWildTarget(row,col){
+  const pts=isMultiplier(row,col)?POINTS.PER_MATCH*2:POINTS.PER_MATCH;
+  if(markCell(row,col)){game.score+=pts;game.totalMatches++;addLog(`Wild selected -> ${CARD_NAMES[game.board[row][col]]} (+${pts})`,'wild');}
+  document.querySelectorAll('.wild-target').forEach(el=>{el.classList.remove('wild-target');el.onclick=null;});
+  game.pendingWilds.shift(); renderBoard();
+  if(game.pendingWilds.length>0){showWildSelection();}
+  else{const nl=detectNewLocos();nl.forEach(l=>{const hm=getCellsForLoco(l).some(([r,c])=>isMultiplier(r,c));const pts=hm?POINTS.PER_LOCO*2:POINTS.PER_LOCO;game.score+=pts;addLog(`\xA1LOCO! ${l.type} ${l.idx} (+${pts} pts)`,'loco');showLocoBanner();});updateStats();document.getElementById('spinBtn').disabled=false;if(game.spinsLeft<=0)endGame();}
+}
+
+function endGame(){
+  game.over=true;const sb=game.spinsLeft*POINTS.PER_SPIN_REMAINING;game.score+=sb;if(sb>0)addLog(`Unused spins bonus: +${sb}`,'match');
+  updateStats();setTimeout(()=>{document.getElementById('finalScore').textContent=`Score: ${game.score.toLocaleString()} points`;const s=getStars();document.getElementById('finalStars').textContent='\u2B50'.repeat(s)+'\u2606'.repeat(3-s);document.getElementById('gameOver').classList.add('show');},500);
+}
+
+function getStars(){const t=state.boardSize===6?[3000,5000,7000]:state.spinsGiven>=15?[1000,2500,4000]:state.spinsGiven>=12?[1500,3000,5000]:[2000,3500,5500];if(game.score>=t[2])return 3;if(game.score>=t[1])return 2;if(game.score>=t[0])return 1;return 0;}
+
+function renderBoard(){
+  const el=document.getElementById('board'),hd=document.getElementById('colHeaders'),s=game.size,lt=s===6?LOCO_LETTERS_6:LOCO_LETTERS_5;
+  el.className='board size-'+s; hd.className='col-headers size-'+s;
+  hd.innerHTML=lt.map(l=>`<div class="col-header" style="width:${s===6?'95px':'110px'}">${l}</div>`).join('');
+  el.innerHTML='';
+  for(let r=0;r<s;r++)for(let c=0;c<s;c++){const id=game.board[r][c],nm=CARD_NAMES[id]||'#'+id;let cls='cell';if(game.marked[r][c])cls+=' marked';if(game.lockState[r][c]===1)cls+=' locked';if(game.lockState[r][c]===2)cls+=' locked cracked';if(game.multiCells.has(r*s+c))cls+=' multiplier';el.innerHTML+=`<div class="${cls}" data-r="${r}" data-c="${c}">${nm}</div>`;}
+}
+
+function renderReels(){const el=document.getElementById('reels');el.innerHTML='';for(let c=0;c<game.size;c++)el.innerHTML+=`<div class="reel">Reel ${c+1}</div>`;}
+
+function updateStats(){
+  document.getElementById('spinsLeft').textContent=game.spinsLeft;document.getElementById('scoreDisplay').textContent=game.score.toLocaleString();
+  document.getElementById('locoCount').textContent=game.completedLocos.size;document.getElementById('matchCount').textContent=game.totalMatches;
+  const s=getStars();for(let i=1;i<=3;i++)document.getElementById('star'+i).className=i<=s?'star earned':'star';
+  const btn=document.getElementById('spinBtn');if(game.over){btn.disabled=true;btn.textContent='GAME OVER';}else if(game.pendingWilds.length>0){btn.disabled=true;btn.textContent='SELECT WILD';}else{btn.disabled=false;btn.textContent='SPIN';}
+}
+
+function showLocoBanner(){const b=document.getElementById('locoBanner');b.classList.remove('show');void b.offsetWidth;b.classList.add('show');}
+function addLog(msg,type){const log=document.getElementById('log'),e=document.createElement('div');e.className='log-entry '+(type||'');e.textContent=msg;log.prepend(e);if(log.children.length>50)log.lastChild.remove();}
+
+function updatePrompt(){
+  const parts=[`LotoLoco level with ${state.boardSize}x${state.boardSize} board, ${state.spinsGiven} spins`];
+  const tp=(state.jokerChance+state.superJokerChance+state.freeSpinChance)*100,bp=state.diablitChance*100;
+  if(bp>0)parts.push(`blocker rate ${bp.toFixed(1)}% vs ${tp.toFixed(1)}% positive symbols`);else parts.push(`no blockers, ${tp.toFixed(1)}% positive symbol rate`);
+  if(state.lockedCells>0)parts.push(`${state.lockedCells} locked cells`);if(state.multiplierCells>0)parts.push(`${state.multiplierCells} multiplier cells`);
+  if(game&&!game.over)parts.push(`| Current: ${game.score} pts, ${game.completedLocos.size} LOCOs, ${game.spinsLeft} spins left`);
+  else if(game&&game.over)parts.push(`| Final: ${game.score} pts, ${getStars()} stars, ${game.completedLocos.size} LOCOs`);
+  document.getElementById('promptText').textContent=parts.join('. ');
+}
+
+function copyPrompt(){navigator.clipboard.writeText(document.getElementById('promptText').textContent);const b=event.target;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);}
+function updateAll(){syncControls();}
+
+// ══════════════════════════════════════════════════
+// ECONOMY SIMULATOR ENGINE
+// ══════════════════════════════════════════════════
+
+const ES_TIERS = [
+  { name: 'Tutorial', levels: [1,5], baseCoins: 5000, perStar: 500, maxCoins: 6500, avgStars: 2.5 },
+  { name: 'Easy', levels: [6,15], baseCoins: 3000, perStar: 500, maxCoins: 4500, avgStars: 2.2 },
+  { name: 'Medium', levels: [16,30], baseCoins: 3500, perStar: 500, maxCoins: 5000, avgStars: 2.0 },
+  { name: 'Hard', levels: [31,50], baseCoins: 4000, perStar: 500, maxCoins: 5500, avgStars: 1.8 },
+  { name: 'Very Hard', levels: [51,70], baseCoins: 5000, perStar: 500, maxCoins: 6500, avgStars: 1.5 },
+  { name: 'Expert', levels: [71,150], baseCoins: 6000, perStar: 500, maxCoins: 7500, avgStars: 1.3 },
+];
+
+const ES_DAILY_LOGIN = [
+  { coins: 1000, tickets: 0, gems: 0 },
+  { coins: 0, tickets: 1, gems: 0 },
+  { coins: 2000, tickets: 0, gems: 0 },
+  { coins: 0, tickets: 0, gems: 5 },
+  { coins: 3000, tickets: 1, gems: 0 },
+  { coins: 0, tickets: 0, gems: 10 },
+  { coins: 5000, tickets: 2, gems: 15 },
+];
+
+const ES_PIGGY_TIERS = [
+  { name: 'Ceramic', unlocksAt: 0, capacity: 5000, breakCost: 10 },
+  { name: 'Bronze', unlocksAt: 20, capacity: 15000, breakCost: 25 },
+  { name: 'Silver', unlocksAt: 50, capacity: 40000, breakCost: 50 },
+  { name: 'Gold', unlocksAt: 100, capacity: 100000, breakCost: 100 },
+];
+
+const ES_PRESETS = {
+  f2p: { login:true, ads:false, iap:false, piggy:true, leaderboard:false, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:10, failTut:0, failEasy:10, failMed:20, failHard:30, failVH:40, failExp:50, powerups:1, powerupCost:1750, extraSpins:0.5, extraSpinCost:1500, adTickets:0, adCoins:0, adDouble:0, iapSpend:0, starterBundle:false, failRewardPct:25 },
+  f2p_ads: { login:true, ads:true, iap:false, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:10, failTut:0, failEasy:10, failMed:20, failHard:30, failVH:40, failExp:50, powerups:1, powerupCost:1750, extraSpins:0.5, extraSpinCost:1500, adTickets:1.5, adCoins:3, adDouble:1, iapSpend:0, starterBundle:false, failRewardPct:25 },
+  minnow: { login:true, ads:true, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:10, failTut:0, failEasy:10, failMed:20, failHard:30, failVH:40, failExp:50, powerups:1.2, powerupCost:1750, extraSpins:0.6, extraSpinCost:1500, adTickets:2, adCoins:5, adDouble:2, iapSpend:8, starterBundle:true, failRewardPct:25 },
+  dolphin: { login:true, ads:true, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:12, failTut:0, failEasy:5, failMed:15, failHard:25, failVH:35, failExp:45, powerups:1.5, powerupCost:2000, extraSpins:0.8, extraSpinCost:2000, adTickets:2.5, adCoins:5, adDouble:3, iapSpend:30, starterBundle:true, failRewardPct:25 },
+  whale: { login:true, ads:false, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:14, failTut:0, failEasy:5, failMed:10, failHard:20, failVH:30, failExp:40, powerups:2, powerupCost:2500, extraSpins:1, extraSpinCost:3000, adTickets:0, adCoins:0, adDouble:0, iapSpend:100, starterBundle:true, failRewardPct:25 },
+};
+
+function esApplyPreset(name, btn) {
+  const p = ES_PRESETS[name];
+  document.getElementById('esToggleLogin').checked = p.login;
+  document.getElementById('esToggleAds').checked = p.ads;
+  document.getElementById('esToggleIAP').checked = p.iap;
+  document.getElementById('esTogglePiggy').checked = p.piggy;
+  document.getElementById('esToggleLeaderboard').checked = p.leaderboard;
+  document.getElementById('esToggleFailReward').checked = p.failReward;
+  document.getElementById('esStartTickets').value = p.startTickets;
+  document.getElementById('esStartTicketsVal').textContent = p.startTickets;
+  document.getElementById('esStartCoins').value = p.startCoins;
+  document.getElementById('esStartCoinsVal').textContent = p.startCoins.toLocaleString();
+  document.getElementById('esStartGems').value = p.startGems;
+  document.getElementById('esStartGemsVal').textContent = p.startGems;
+  document.getElementById('esRegenHours').value = p.regenHours;
+  document.getElementById('esRegenHoursVal').textContent = p.regenHours;
+  document.getElementById('esMaxTickets').value = p.maxTickets;
+  document.getElementById('esMaxTicketsVal').textContent = p.maxTickets;
+  document.getElementById('esPlayHours').value = p.playHours;
+  document.getElementById('esPlayHoursVal').textContent = p.playHours;
+  document.getElementById('esFailTut').value = p.failTut;
+  document.getElementById('esFailTutVal').textContent = p.failTut + '%';
+  document.getElementById('esFailEasy').value = p.failEasy;
+  document.getElementById('esFailEasyVal').textContent = p.failEasy + '%';
+  document.getElementById('esFailMed').value = p.failMed;
+  document.getElementById('esFailMedVal').textContent = p.failMed + '%';
+  document.getElementById('esFailHard').value = p.failHard;
+  document.getElementById('esFailHardVal').textContent = p.failHard + '%';
+  document.getElementById('esFailVH').value = p.failVH;
+  document.getElementById('esFailVHVal').textContent = p.failVH + '%';
+  document.getElementById('esFailExp').value = p.failExp;
+  document.getElementById('esFailExpVal').textContent = p.failExp + '%';
+  document.getElementById('esPowerups').value = p.powerups;
+  document.getElementById('esPowerupsVal').textContent = p.powerups.toFixed(1);
+  document.getElementById('esPowerupCost').value = p.powerupCost;
+  document.getElementById('esPowerupCostVal').textContent = p.powerupCost.toLocaleString();
+  document.getElementById('esExtraSpins').value = p.extraSpins;
+  document.getElementById('esExtraSpinsVal').textContent = p.extraSpins.toFixed(1);
+  document.getElementById('esExtraSpinCost').value = p.extraSpinCost;
+  document.getElementById('esExtraSpinCostVal').textContent = p.extraSpinCost.toLocaleString();
+  document.getElementById('esAdTickets').value = p.adTickets;
+  document.getElementById('esAdTicketsVal').textContent = p.adTickets.toFixed(1);
+  document.getElementById('esAdCoins').value = p.adCoins;
+  document.getElementById('esAdCoinsVal').textContent = p.adCoins;
+  document.getElementById('esAdDouble').value = p.adDouble;
+  document.getElementById('esAdDoubleVal').textContent = p.adDouble;
+  document.getElementById('esIAPSpend').value = p.iapSpend;
+  document.getElementById('esIAPSpendVal').textContent = '$' + p.iapSpend;
+  document.getElementById('esStarterBundle').checked = p.starterBundle;
+  document.getElementById('esFailRewardPct').value = p.failRewardPct;
+  document.getElementById('esFailRewardPctVal').textContent = p.failRewardPct + '%';
+  document.querySelectorAll('.es-preset').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  esRunSim();
+}
+
+function esGetParams() {
+  return {
+    login: document.getElementById('esToggleLogin').checked,
+    ads: document.getElementById('esToggleAds').checked,
+    iap: document.getElementById('esToggleIAP').checked,
+    piggy: document.getElementById('esTogglePiggy').checked,
+    leaderboard: document.getElementById('esToggleLeaderboard').checked,
+    failReward: document.getElementById('esToggleFailReward').checked,
+    startTickets: +document.getElementById('esStartTickets').value,
+    startCoins: +document.getElementById('esStartCoins').value,
+    startGems: +document.getElementById('esStartGems').value,
+    regenHours: +document.getElementById('esRegenHours').value,
+    maxTickets: +document.getElementById('esMaxTickets').value,
+    playHours: +document.getElementById('esPlayHours').value,
+    failRates: {
+      Tutorial: +document.getElementById('esFailTut').value / 100,
+      Easy: +document.getElementById('esFailEasy').value / 100,
+      Medium: +document.getElementById('esFailMed').value / 100,
+      Hard: +document.getElementById('esFailHard').value / 100,
+      'Very Hard': +document.getElementById('esFailVH').value / 100,
+      Expert: +document.getElementById('esFailExp').value / 100,
+    },
+    powerupsPerLevel: +document.getElementById('esPowerups').value,
+    powerupCost: +document.getElementById('esPowerupCost').value,
+    extraSpinsPerLevel: +document.getElementById('esExtraSpins').value,
+    extraSpinCost: +document.getElementById('esExtraSpinCost').value,
+    adTicketsPerDay: +document.getElementById('esAdTickets').value,
+    adCoinsPerDay: +document.getElementById('esAdCoins').value,
+    adDoublePerDay: +document.getElementById('esAdDouble').value,
+    iapMonthlySpend: +document.getElementById('esIAPSpend').value,
+    starterBundle: document.getElementById('esStarterBundle').checked,
+    failRewardPct: +document.getElementById('esFailRewardPct').value / 100,
+  };
+}
+
+function esGetTierForLevel(lvl) {
+  for (const t of ES_TIERS) { if (lvl >= t.levels[0] && lvl <= t.levels[1]) return t; }
+  return ES_TIERS[ES_TIERS.length - 1];
+}
+
+function esGetPiggyTier(currentLevel) {
+  let tier = ES_PIGGY_TIERS[0];
+  for (const t of ES_PIGGY_TIERS) { if (currentLevel >= t.unlocksAt) tier = t; }
+  return tier;
+}
+
+function esRunSim() {
+  const p = esGetParams();
+
+  // State
+  let coins = p.startCoins;
+  let gems = p.startGems;
+  let tickets = p.startTickets;
+  let piggyCoins = 0;
+  let currentLevel = 1;
+  let day = 0;
+  let totalLevelsCompleted = 0;
+  let totalLevelsFailed = 0;
+  let totalCoinsEarned = 0;
+  let totalCoinsSpent = 0;
+  let totalGemsEarned = p.startGems;
+  let totalGemsSpent = 0;
+  let totalTicketsUsed = 0;
+  let totalPiggyBreaks = 0;
+  let piggyCoinsRecovered = 0;
+  let totalAdRevenue = 0;
+  let totalIAPGems = 0;
+  let completionDay = -1;
+
+  // Starter bundle (day 0)
+  if (p.iap && p.starterBundle) {
+    gems += 200; coins += 10000; tickets += 10;
+    totalGemsEarned += 200; totalCoinsEarned += 10000;
+    totalIAPGems += 200;
+  }
+
+  // Daily snapshots for charts
+  const snapshots = [];
+  const maxDays = 90;
+
+  // IAP: convert monthly spend to gems per day (use ~62.5 gems/$ average rate)
+  const iapGemsPerDay = p.iap ? (p.iapMonthlySpend * 62.5) / 30 : 0;
+
+  for (day = 1; day <= maxDays; day++) {
+    const dayStart = { coins, gems, tickets, level: currentLevel };
+    let dayCoinsIn = 0, dayCoinsOut = 0, dayGemsIn = 0, dayGemsOut = 0;
+    let dayLevelsCompleted = 0, dayLevelsFailed = 0, dayTicketsUsed = 0;
+
+    // --- Ticket regeneration ---
+    const regenPerDay = Math.min(Math.floor(p.playHours / p.regenHours), p.maxTickets);
+    const ticketsFromRegen = Math.max(0, Math.min(regenPerDay, p.maxTickets - Math.min(tickets, p.maxTickets)) + Math.min(tickets, p.maxTickets) > p.maxTickets ? 0 : regenPerDay);
+    // Simpler: assume player starts day near 0 tickets (played yesterday), regens up
+    const effectiveRegen = Math.min(Math.floor(p.playHours / p.regenHours), p.maxTickets);
+    tickets = Math.min(tickets + effectiveRegen, tickets + effectiveRegen); // no cap on overflow from purchases
+
+    // --- Daily login ---
+    if (p.login) {
+      const loginDay = ES_DAILY_LOGIN[(day - 1) % 7];
+      coins += loginDay.coins; dayCoinsIn += loginDay.coins;
+      tickets += loginDay.tickets;
+      gems += loginDay.gems; dayGemsIn += loginDay.gems;
+      totalCoinsEarned += loginDay.coins;
+      totalGemsEarned += loginDay.gems;
+    }
+
+    // --- Ad rewards ---
+    if (p.ads) {
+      tickets += p.adTicketsPerDay;
+      const adCoinBonus = p.adCoinsPerDay * 500;
+      coins += adCoinBonus; dayCoinsIn += adCoinBonus;
+      totalCoinsEarned += adCoinBonus;
+      totalAdRevenue += adCoinBonus;
+    }
+
+    // --- IAP gems ---
+    if (p.iap && iapGemsPerDay > 0) {
+      const dailyGems = Math.round(iapGemsPerDay);
+      gems += dailyGems; dayGemsIn += dailyGems;
+      totalGemsEarned += dailyGems;
+      totalIAPGems += dailyGems;
+    }
+
+    // --- Leaderboard rewards (weekly average) ---
+    if (p.leaderboard) {
+      // ~15 gems/week + ~3000 coins/week avg for active player
+      if (day % 7 === 0) {
+        gems += 15; dayGemsIn += 15; totalGemsEarned += 15;
+        coins += 3000; dayCoinsIn += 3000; totalCoinsEarned += 3000;
+      }
+    }
+
+    // --- Play levels ---
+    let availableTickets = Math.floor(tickets);
+    while (availableTickets > 0 && currentLevel <= 150) {
+      availableTickets--;
+      tickets--;
+      dayTicketsUsed++;
+      totalTicketsUsed++;
+
+      const tier = esGetTierForLevel(currentLevel);
+      const failRate = p.failRates[tier.name] || 0;
+      const succeeded = Math.random() >= failRate;
+
+      if (succeeded) {
+        // Earn coins based on average stars
+        const starBonus = Math.round(tier.avgStars) * tier.perStar;
+        const levelReward = tier.baseCoins + starBonus;
+        coins += levelReward; dayCoinsIn += levelReward;
+        totalCoinsEarned += levelReward;
+
+        // Ad double coins
+        if (p.ads && p.adDoublePerDay > 0 && dayLevelsCompleted < p.adDoublePerDay) {
+          coins += levelReward; dayCoinsIn += levelReward;
+          totalCoinsEarned += levelReward;
+          totalAdRevenue += levelReward;
+        }
+
+        // Piggy bank: 10% of earned coins
+        if (p.piggy) {
+          piggyCoins += Math.round(levelReward * 0.1);
+        }
+
+        // Spend on power-ups
+        const puCost = Math.round(p.powerupsPerLevel * p.powerupCost);
+        if (coins >= puCost) {
+          coins -= puCost; dayCoinsOut += puCost; totalCoinsSpent += puCost;
+        }
+
+        // Spend on extra spins
+        const esCost = Math.round(p.extraSpinsPerLevel * p.extraSpinCost);
+        if (coins >= esCost) {
+          coins -= esCost; dayCoinsOut += esCost; totalCoinsSpent += esCost;
+        }
+
+        dayLevelsCompleted++;
+        totalLevelsCompleted++;
+        currentLevel++;
+        if (currentLevel > 150 && completionDay < 0) completionDay = day;
+      } else {
+        // Failed level
+        dayLevelsFailed++;
+        totalLevelsFailed++;
+
+        // Partial failure reward
+        if (p.failReward) {
+          const tier2 = esGetTierForLevel(currentLevel);
+          const partialReward = Math.round(tier2.baseCoins * p.failRewardPct);
+          coins += partialReward; dayCoinsIn += partialReward;
+          totalCoinsEarned += partialReward;
+          if (p.piggy) piggyCoins += Math.round(partialReward * 0.1);
+        }
+
+        // Still spent power-ups on failed attempt (reduced)
+        const failPuCost = Math.round(p.powerupsPerLevel * p.powerupCost * 0.5);
+        if (coins >= failPuCost) {
+          coins -= failPuCost; dayCoinsOut += failPuCost; totalCoinsSpent += failPuCost;
+        }
+      }
+    }
+
+    // --- Piggy bank break check ---
+    if (p.piggy) {
+      const piggyTier = esGetPiggyTier(currentLevel);
+      if (piggyCoins >= piggyTier.capacity && gems >= piggyTier.breakCost) {
+        const recovered = Math.min(piggyCoins, piggyTier.capacity);
+        coins += recovered;
+        piggyCoinsRecovered += recovered;
+        gems -= piggyTier.breakCost;
+        totalGemsSpent += piggyTier.breakCost;
+        piggyCoins -= recovered;
+        totalPiggyBreaks++;
+      }
+    }
+
+    // Record snapshot
+    snapshots.push({
+      day,
+      coins: Math.round(coins),
+      gems: Math.round(gems),
+      tickets: Math.round(tickets),
+      level: Math.min(currentLevel, 150),
+      piggy: Math.round(piggyCoins),
+      dayCoinsIn: Math.round(dayCoinsIn),
+      dayCoinsOut: Math.round(dayCoinsOut),
+      dayLevelsCompleted,
+      dayLevelsFailed,
+      dayTicketsUsed,
+    });
+  }
+
+  // Calculate health metrics
+  const last7 = snapshots.slice(-7);
+  const avgDailyCoins = last7.reduce((s, d) => s + d.dayCoinsIn, 0) / 7;
+  const avgDailyTickets = last7.reduce((s, d) => s + d.dayTicketsUsed, 0) / 7;
+  const avgDailyLevels = last7.reduce((s, d) => s + d.dayLevelsCompleted, 0) / 7;
+  const totalAttempts = totalLevelsCompleted + totalLevelsFailed;
+  const overallFailRate = totalAttempts > 0 ? totalLevelsFailed / totalAttempts : 0;
+  const avgExtraSpins = p.extraSpinsPerLevel;
+  const avgPowerups = p.powerupsPerLevel;
+
+  esRenderResults({
+    snapshots, p, completionDay,
+    totalLevelsCompleted, totalLevelsFailed, totalAttempts,
+    totalCoinsEarned, totalCoinsSpent, totalGemsEarned, totalGemsSpent,
+    totalTicketsUsed, totalPiggyBreaks, piggyCoinsRecovered,
+    totalAdRevenue, totalIAPGems,
+    avgDailyCoins, avgDailyTickets, avgDailyLevels, overallFailRate,
+    avgExtraSpins, avgPowerups,
+    finalCoins: Math.round(coins), finalGems: Math.round(gems), finalPiggy: Math.round(piggyCoins),
+  });
+}
+
+function esRenderResults(r) {
+  const el = document.getElementById('esResults');
+  const fmt = n => Math.round(n).toLocaleString();
+  const pct = n => (n * 100).toFixed(1) + '%';
+
+  // Health check helpers
+  function healthStatus(val, min, max) {
+    if (val >= min && val <= max) return ['HEALTHY', 'var(--success)'];
+    if (val < min) return ['TOO LOW', 'var(--red)'];
+    return ['TOO HIGH', 'var(--gold)'];
+  }
+
+  const healthChecks = [
+    { label: 'Coins/Day (last 7d)', val: r.avgDailyCoins, min: 8000, max: 20000, fmt: fmt },
+    { label: 'Tickets/Day (last 7d)', val: r.avgDailyTickets, min: 3, max: 10, fmt: v => v.toFixed(1) },
+    { label: 'Extra Spins/Level', val: r.avgExtraSpins, min: 0.1, max: 1.0, fmt: v => v.toFixed(1) },
+    { label: 'Power-ups/Level', val: r.avgPowerups, min: 0.2, max: 2.0, fmt: v => v.toFixed(1) },
+    { label: 'Fail Rate', val: r.overallFailRate, min: 0.15, max: 0.45, fmt: pct },
+  ];
+
+  // World milestone data
+  const worldMilestones = [
+    { name: 'El Mercado', endLevel: 30 },
+    { name: 'La Playa', endLevel: 60 },
+    { name: 'El Pueblo', endLevel: 90 },
+    { name: 'La Fiesta', endLevel: 120 },
+    { name: 'El Cielo', endLevel: 150 },
+  ];
+
+  const worldSnapshots = worldMilestones.map(w => {
+    const snap = r.snapshots.find(s => s.level >= w.endLevel);
+    return { ...w, day: snap ? snap.day : '90+', coins: snap ? snap.coins : r.finalCoins, gems: snap ? snap.gems : r.finalGems };
+  });
+
+  el.innerHTML = `
+    <!-- Key metrics -->
+    <div class="es-metric-grid">
+      <div class="es-metric pink">
+        <div class="es-m-value">${r.completionDay > 0 ? r.completionDay + 'd' : '90d+'}</div>
+        <div class="es-m-label">Days to Complete</div>
+      </div>
+      <div class="es-metric gold">
+        <div class="es-m-value">${fmt(r.finalCoins)}</div>
+        <div class="es-m-label">Final Coins</div>
+      </div>
+      <div class="es-metric purple">
+        <div class="es-m-value">${fmt(r.finalGems)}</div>
+        <div class="es-m-label">Final Gems</div>
+      </div>
+      <div class="es-metric turq">
+        <div class="es-m-value">${fmt(r.totalTicketsUsed)}</div>
+        <div class="es-m-label">Total Tickets Used</div>
+      </div>
+      <div class="es-metric green">
+        <div class="es-m-value">${r.totalLevelsCompleted}</div>
+        <div class="es-m-label">Levels Completed</div>
+      </div>
+      <div class="es-metric red">
+        <div class="es-m-value">${r.totalLevelsFailed}</div>
+        <div class="es-m-label">Levels Failed</div>
+      </div>
+    </div>
+
+    <!-- Coin chart -->
+    <div class="es-card">
+      <h3>Coin Balance Over Time</h3>
+      <div class="es-chart-wrap"><canvas id="esCoinChart"></canvas></div>
+    </div>
+
+    <!-- Gem chart -->
+    <div class="es-card turq">
+      <h3>Gem Balance Over Time</h3>
+      <div class="es-chart-wrap"><canvas id="esGemChart"></canvas></div>
+    </div>
+
+    <!-- Level progression chart -->
+    <div class="es-card gold">
+      <h3>Level Progression</h3>
+      <div class="es-chart-wrap"><canvas id="esLevelChart"></canvas></div>
+    </div>
+
+    <!-- Daily coin flow chart -->
+    <div class="es-card green">
+      <h3>Daily Coin Flow (In vs Out)</h3>
+      <div class="es-chart-wrap"><canvas id="esCoinFlowChart"></canvas></div>
+    </div>
+
+    <!-- World milestones -->
+    <div class="es-card">
+      <h3>World Milestones</h3>
+      <table class="es-table">
+        <tr><th>World</th><th>End Level</th><th>Day Reached</th><th>Coins at Arrival</th><th>Gems at Arrival</th></tr>
+        ${worldSnapshots.map(w => `<tr><td>${w.name}</td><td class="num">${w.endLevel}</td><td class="num">${w.day}</td><td class="num">${fmt(w.coins)}</td><td class="num">${fmt(w.gems)}</td></tr>`).join('')}
+      </table>
+    </div>
+
+    <!-- Economy totals -->
+    <div class="es-card turq">
+      <h3>Economy Totals (${r.snapshots.length} Days)</h3>
+      <table class="es-table">
+        <tr><td>Total Coins Earned</td><td class="num">${fmt(r.totalCoinsEarned)}</td></tr>
+        <tr><td>Total Coins Spent</td><td class="num">${fmt(r.totalCoinsSpent)}</td></tr>
+        <tr><td>Net Coin Balance</td><td class="num" style="color:${r.totalCoinsEarned - r.totalCoinsSpent > 0 ? 'var(--success)' : 'var(--red)'}">${fmt(r.totalCoinsEarned - r.totalCoinsSpent)}</td></tr>
+        <tr><td>Total Gems Earned</td><td class="num">${fmt(r.totalGemsEarned)}</td></tr>
+        <tr><td>Total Gems Spent</td><td class="num">${fmt(r.totalGemsSpent)}</td></tr>
+        <tr><td>Piggy Bank Breaks</td><td class="num">${r.totalPiggyBreaks}</td></tr>
+        <tr><td>Piggy Coins Recovered</td><td class="num">${fmt(r.piggyCoinsRecovered)}</td></tr>
+        ${r.p.ads ? `<tr><td>Total Ad Revenue (Coins)</td><td class="num">${fmt(r.totalAdRevenue)}</td></tr>` : ''}
+        ${r.p.iap ? `<tr><td>Total IAP Gems</td><td class="num">${fmt(r.totalIAPGems)}</td></tr>` : ''}
+        <tr><td>Fail Rate</td><td class="num">${pct(r.overallFailRate)}</td></tr>
+        <tr><td>Wasted Tickets (Failures)</td><td class="num ${r.totalLevelsFailed > r.totalLevelsCompleted * 0.5 ? 'warn' : ''}">${r.totalLevelsFailed}</td></tr>
+      </table>
+    </div>
+
+    <!-- Health scorecard -->
+    <div class="es-card gold">
+      <h3>Economy Health Scorecard</h3>
+      ${healthChecks.map(h => {
+        const [status, color] = healthStatus(h.val, h.min, h.max);
+        const pctPos = Math.min(100, Math.max(0, ((h.val - h.min * 0.5) / (h.max * 1.5 - h.min * 0.5)) * 100));
+        return `<div class="es-health-bar">
+          <span class="es-health-label">${h.label}</span>
+          <div class="es-health-track">
+            <div class="es-health-fill" style="width:${pctPos}%;background:${color}"></div>
+          </div>
+          <span class="es-health-val">${h.fmt(h.val)}</span>
+          <span style="font-size:10px;color:${color};min-width:70px;text-align:right;font-weight:700">${status}</span>
+        </div>`;
+      }).join('')}
+      <div style="margin-top:12px;font-size:11px;color:#666;">
+        Target ranges: Coins/day 8K-20K | Tickets/day 3-10 | Extra spins 0.1-1.0 | Power-ups 0.2-2.0 | Fail rate 15-45%
+      </div>
+    </div>
+
+    <!-- Key findings -->
+    <div class="es-card">
+      <h3>Key Findings</h3>
+      <div id="esFindings" style="font-size:13px;color:#ccc;line-height:1.7;"></div>
+    </div>
+  `;
+
+  // Draw charts
+  esDrawLineChart('esCoinChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.coins), 'Coins', '#FFB300');
+  esDrawLineChart('esGemChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.gems), 'Gems', '#7B1FA2');
+  esDrawLineChart('esLevelChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.level), 'Level', '#00BCD4');
+  esDrawDualBarChart('esCoinFlowChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.dayCoinsIn), r.snapshots.map(s => s.dayCoinsOut));
+
+  // Generate findings
+  const findings = [];
+  if (r.completionDay > 0 && r.completionDay < 45) findings.push(`<span style="color:var(--gold)">&#9888;</span> Content exhausted in ${r.completionDay} days — consider slowing progression or adding replayability.`);
+  if (r.completionDay > 0 && r.completionDay >= 45 && r.completionDay <= 75) findings.push(`<span style="color:var(--success)">&#10003;</span> Completion pace (${r.completionDay} days) is healthy for a mobile game.`);
+  if (r.completionDay < 0) findings.push(`<span style="color:var(--turquoise)">&#8505;</span> Player hasn't completed all 150 levels within 90 days — good content longevity.`);
+  if (r.finalCoins > 300000) findings.push(`<span style="color:var(--gold)">&#9888;</span> Coin balance is ${fmt(r.finalCoins)} — coins are inflating with insufficient sinks. Add large coin sinks (cosmetics, collections).`);
+  if (r.finalCoins < 5000 && r.totalLevelsCompleted > 50) findings.push(`<span style="color:var(--red)">&#9888;</span> Player is nearly broke with ${fmt(r.finalCoins)} coins — economy may be too punishing.`);
+  if (r.totalGemsEarned - r.totalIAPGems < 100 && r.snapshots.length >= 30) findings.push(`<span style="color:var(--red)">&#9888;</span> F2P gem income is extremely low (${fmt(r.totalGemsEarned - r.totalIAPGems)} non-IAP gems in ${r.snapshots.length} days). Gems feel decorative.`);
+  if (r.overallFailRate > 0.45) findings.push(`<span style="color:var(--red)">&#9888;</span> Fail rate (${pct(r.overallFailRate)}) is very high — significant churn risk at difficulty walls.`);
+  if (r.overallFailRate < 0.15) findings.push(`<span style="color:var(--gold)">&#9888;</span> Fail rate (${pct(r.overallFailRate)}) is very low — no monetisation pressure from difficulty.`);
+  if (r.totalLevelsFailed > 0 && !r.p.failReward) findings.push(`<span style="color:var(--gold)">&#9888;</span> ${r.totalLevelsFailed} failed levels earned zero reward. Enable "Partial Failure Rewards" to reduce frustration.`);
+  if (r.p.failReward) findings.push(`<span style="color:var(--success)">&#10003;</span> Partial failure rewards active (${pct(r.p.failRewardPct)}) — reduces frustration on failed levels.`);
+  if (r.totalPiggyBreaks === 0 && r.p.piggy && r.snapshots.length > 14) findings.push(`<span style="color:var(--gold)">&#9888;</span> Piggy bank was never broken — gem cost may be too high relative to income.`);
+  if (r.totalPiggyBreaks > 5) findings.push(`<span style="color:var(--success)">&#10003;</span> Piggy bank broken ${r.totalPiggyBreaks} times — good engagement with the mechanic.`);
+  if (r.avgDailyCoins > 20000) findings.push(`<span style="color:var(--gold)">&#9888;</span> Daily coin income (${fmt(r.avgDailyCoins)}) exceeds healthy range — risk of inflation.`);
+  if (r.avgDailyCoins < 8000 && r.totalLevelsCompleted > 20) findings.push(`<span style="color:var(--red)">&#9888;</span> Daily coin income (${fmt(r.avgDailyCoins)}) is below healthy range — economy feels stingy.`);
+  if (!r.p.ads && !r.p.iap) findings.push(`<span style="color:var(--turquoise)">&#8505;</span> Pure F2P mode — no monetisation active. This is the baseline experience.`);
+  if (r.finalPiggy > 20000) findings.push(`<span style="color:var(--gold)">&#9888;</span> ${fmt(r.finalPiggy)} coins trapped in piggy bank — player can see but can't access without gems.`);
+
+  if (findings.length === 0) findings.push(`<span style="color:var(--success)">&#10003;</span> Economy looks balanced within healthy parameters.`);
+  document.getElementById('esFindings').innerHTML = findings.map(f => `<div style="padding:4px 0;border-bottom:1px solid #222;">${f}</div>`).join('');
+}
+
+// ── Chart drawing (pure Canvas, no libraries) ──
+
+function esDrawLineChart(canvasId, labels, data, label, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const pad = { top: 20, right: 20, bottom: 30, left: 65 };
+  const gW = W - pad.left - pad.right, gH = H - pad.top - pad.bottom;
+
+  const maxVal = Math.max(...data, 1);
+  const minVal = Math.min(...data, 0);
+  const range = maxVal - minVal || 1;
+
+  // Grid
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (gH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#666'; ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal - (range / 4) * i).toLocaleString(), pad.left - 8, y + 4);
+  }
+
+  // X labels
+  ctx.fillStyle = '#666'; ctx.font = '10px system-ui'; ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(labels.length / 10));
+  for (let i = 0; i < labels.length; i += step) {
+    const x = pad.left + (i / (labels.length - 1)) * gW;
+    ctx.fillText('D' + labels[i], x, H - 5);
+  }
+
+  // Line
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = pad.left + (i / (data.length - 1)) * gW;
+    const y = pad.top + gH - ((v - minVal) / range) * gH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Fill
+  ctx.globalAlpha = 0.1;
+  ctx.lineTo(pad.left + gW, pad.top + gH);
+  ctx.lineTo(pad.left, pad.top + gH);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function esDrawDualBarChart(canvasId, labels, dataIn, dataOut) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const pad = { top: 20, right: 20, bottom: 30, left: 65 };
+  const gW = W - pad.left - pad.right, gH = H - pad.top - pad.bottom;
+
+  const maxVal = Math.max(...dataIn, ...dataOut, 1);
+
+  // Grid
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (gH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#666'; ctx.font = '10px system-ui'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal - (maxVal / 4) * i).toLocaleString(), pad.left - 8, y + 4);
+  }
+
+  const barW = Math.max(1, (gW / labels.length) * 0.4);
+  dataIn.forEach((v, i) => {
+    const x = pad.left + (i / labels.length) * gW;
+    const hIn = (v / maxVal) * gH;
+    const hOut = (dataOut[i] / maxVal) * gH;
+    ctx.fillStyle = 'rgba(76, 175, 80, 0.7)';
+    ctx.fillRect(x, pad.top + gH - hIn, barW, hIn);
+    ctx.fillStyle = 'rgba(198, 40, 40, 0.7)';
+    ctx.fillRect(x + barW, pad.top + gH - hOut, barW, hOut);
+  });
+
+  // Legend
+  ctx.fillStyle = 'rgba(76, 175, 80, 0.7)'; ctx.fillRect(W - 140, 8, 12, 12);
+  ctx.fillStyle = '#888'; ctx.font = '10px system-ui'; ctx.textAlign = 'left';
+  ctx.fillText('Coins In', W - 124, 18);
+  ctx.fillStyle = 'rgba(198, 40, 40, 0.7)'; ctx.fillRect(W - 70, 8, 12, 12);
+  ctx.fillStyle = '#888'; ctx.fillText('Coins Out', W - 54, 18);
+
+  // X labels
+  ctx.fillStyle = '#666'; ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(labels.length / 10));
+  for (let i = 0; i < labels.length; i += step) {
+    const x = pad.left + (i / labels.length) * gW;
+    ctx.fillText('D' + labels[i], x, H - 5);
+  }
+}
+
+// ── End Economy Simulator ──
+
+// Init — hide playground-only elements on overview tab
+document.getElementById('log').style.display='none';
+document.querySelector('.prompt-section').style.display='none';
+newGame(); updatePrompt();
+
+// Auto-run economy sim on first load
+setTimeout(esRunSim, 100);
+</script>
+</body>
+</html>
