@@ -3302,6 +3302,9 @@ function esGetPiggyTier(currentLevel) {
   return tier;
 }
 
+// Auto-run simulation on any input change
+document.getElementById('tab-econsim').addEventListener('input', function() { esRunSim(); });
+
 function esRunSim() {
   const p = esGetParams();
 
