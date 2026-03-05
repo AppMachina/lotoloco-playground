@@ -461,6 +461,26 @@
   .journey-nav-btn { padding: 8px 16px; background: var(--surface); color: #aaa; border: 1px solid #444; border-radius: 16px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
   .journey-nav-btn:hover { border-color: var(--pink); color: #eee; }
   .journey-nav-btn.active { background: var(--pink); color: #fff; border-color: var(--pink); }
+
+  /* ═══════════════════════════════════════════ */
+  /* CHANGELOG TAB                               */
+  /* ═══════════════════════════════════════════ */
+  .changelog-wrap { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .changelog-entry { position: relative; padding: 0 0 32px 32px; border-left: 2px solid #333; }
+  .changelog-entry:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .changelog-entry::before { content: ''; position: absolute; left: -6px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--turquoise); border: 2px solid var(--dark); }
+  .changelog-entry.latest::before { background: var(--pink); box-shadow: 0 0 8px rgba(233,30,99,0.5); }
+  .changelog-date { font-size: 11px; color: var(--turquoise); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .changelog-entry.latest .changelog-date { color: var(--pink); }
+  .changelog-title { font-size: 16px; color: #eee; font-weight: 700; margin-bottom: 8px; }
+  .changelog-body { font-size: 13px; color: #999; line-height: 1.7; }
+  .changelog-body ul { padding-left: 18px; margin: 4px 0; }
+  .changelog-body li { margin: 3px 0; }
+  .changelog-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+  .changelog-tag.feat { background: rgba(0,188,212,0.15); color: var(--turquoise); }
+  .changelog-tag.fix { background: rgba(76,175,80,0.15); color: var(--success); }
+  .changelog-tag.ui { background: rgba(123,31,162,0.15); color: var(--purple); }
+  .changelog-tag.sim { background: rgba(255,179,0,0.15); color: var(--gold); }
 </style>
 </head>
 <body>
@@ -472,7 +492,8 @@
     <span class="subtitle">Game Design Playground</span>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('overview')">Core Features</button>
+    <button class="tab active" onclick="switchTab('changelog')">Changelog</button>
+    <button class="tab" onclick="switchTab('overview')">Core Features</button>
     <button class="tab" onclick="switchTab('economy')">Economy &amp; Store</button>
     <button class="tab" onclick="switchTab('levels')">Level Design</button>
     <button class="tab" onclick="switchTab('engagement')">Engagement Systems</button>
@@ -486,9 +507,112 @@
 </div>
 
 <!-- ═══════════════════════════════════════════ -->
+<!-- TAB 0: CHANGELOG                           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-changelog">
+  <div class="changelog-wrap">
+    <div class="hero" style="padding: 24px 0 32px;">
+      <h2 style="font-size: 36px;">CHANGELOG</h2>
+      <div class="tagline">What's new in the LotoLoco Game Design Playground</div>
+    </div>
+
+    <div class="changelog-entry latest">
+      <div class="changelog-date">5 March 2026</div>
+      <div class="changelog-title">Menus & Navigation Wireframes + Changelog Tab</div>
+      <div class="changelog-body">
+        <span class="changelog-tag feat">Feature</span> <span class="changelog-tag ui">UI</span>
+        <ul>
+          <li>Added <strong>Menus &amp; Navigation</strong> phase to User Journey with 6 wireframe screens: World Map (infinite scroll), Store, Gameplay, Level Complete, Out of Spins, Daily Login</li>
+          <li>World Map wireframe shows winding path style with level nodes, challenge banner, HUD, and bottom tab bar</li>
+          <li>Added this <strong>Changelog tab</strong> as the landing page</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-date">5 March 2026</div>
+      <div class="changelog-title">Post-Launch Roadmap Tab</div>
+      <div class="changelog-body">
+        <span class="changelog-tag feat">Feature</span>
+        <ul>
+          <li>New <strong>Post-Launch Roadmap</strong> tab with Gantt-style visual across 4 phases</li>
+          <li>9 features: Collection System, Push Notifications, Friends, Gifting, Clubs, Events, Cosmetics, Endless Mode, Hard Mode</li>
+          <li>Click-to-expand detail panels with design sketches, effort/impact tags, and holiday calendar</li>
+          <li>Priority ranking table with impact and effort assessment</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-date">5 March 2026</div>
+      <div class="changelog-title">Economy Simulator &mdash; Deterministic Model + Prompt Generator</div>
+      <div class="changelog-body">
+        <span class="changelog-tag fix">Fix</span> <span class="changelog-tag sim">Simulator</span>
+        <ul>
+          <li>Replaced RNG-based pass/fail with <strong>expected-value math</strong> &mdash; same inputs now always produce same outputs</li>
+          <li>Fixed "Days to Complete" going up/down erratically when adjusting starting tickets or coins</li>
+          <li>Fixed broken ticket regeneration logic that ignored the max cap</li>
+          <li>Added <strong>Claude Code Prompt Generator</strong> card &mdash; generates copy-pasteable prompts with simulation findings and file-level fix instructions for the Loto Loco Unity project</li>
+          <li>Simulation auto-runs on any parameter change</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-date">4 March 2026</div>
+      <div class="changelog-title">User Journey Wireframes Tab</div>
+      <div class="changelog-body">
+        <span class="changelog-tag feat">Feature</span> <span class="changelog-tag ui">UI</span>
+        <ul>
+          <li>New <strong>User Journey</strong> tab with wireframe-by-wireframe walkthrough</li>
+          <li>4 phases: Launch &amp; Auth, Tutorial (L1-5), Monetisation Ramp (L6-30), Retention Loop</li>
+          <li>Phase filtering navigation to focus on specific journey stages</li>
+          <li>Monetisation pressure curve chart and economy drip summary table</li>
+          <li>Increased font sizes across all wireframe screens for readability</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-date">4 March 2026</div>
+      <div class="changelog-title">Economy Simulator Tab</div>
+      <div class="changelog-body">
+        <span class="changelog-tag feat">Feature</span> <span class="changelog-tag sim">Simulator</span>
+        <ul>
+          <li>New <strong>Economy Simulator</strong> tab with full 90-day simulation engine</li>
+          <li>5 player archetype presets: F2P Pure, F2P + Ads, Minnow, Dolphin, Whale</li>
+          <li>Configurable parameters: starting balances, ticket economy, fail rates, spending behavior, ad/IAP behavior</li>
+          <li>Charts: coin balance, gem balance, level progression, daily coin flow</li>
+          <li>Economy health scorecard with target ranges</li>
+          <li>Key findings auto-generated from simulation results</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-date">3 March 2026</div>
+      <div class="changelog-title">Initial Release &mdash; LotoLoco Game Design Playground</div>
+      <div class="changelog-body">
+        <span class="changelog-tag feat">Feature</span>
+        <ul>
+          <li><strong>Core Features</strong> tab: gameplay loop, special symbols, board mechanics, worlds, difficulty, currencies, power-ups, engagement, technical overview</li>
+          <li><strong>Economy &amp; Store</strong> tab: currency system, coin/gem economy, gem packs, bundles, piggy bank, economy health indicators</li>
+          <li><strong>Level Design</strong> tab: world progression, difficulty configuration, star thresholds, board generation</li>
+          <li><strong>Engagement Systems</strong> tab: daily login, piggy bank, leaderboards, season pass, rewarded ads, daily deals</li>
+          <li><strong>FTUE &amp; Onboarding</strong> tab: first session flow, tutorial progression, monetisation timeline, economy drip</li>
+          <li><strong>Technical Architecture</strong> tab: server model, 35 CloudScript handlers, data model, anti-cheat</li>
+          <li><strong>Play the Game</strong> tab: interactive Loter&iacute;a board simulator with reels, scoring, and LOCO detection</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
 <!-- TAB 1: CORE FEATURES OVERVIEW              -->
 <!-- ═══════════════════════════════════════════ -->
-<div class="tab-content active" id="tab-overview">
+<div class="tab-content" id="tab-overview">
   <div class="overview">
     <div class="overview-inner">
 
