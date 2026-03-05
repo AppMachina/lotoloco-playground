@@ -331,6 +331,11 @@
   .es-preset:hover { border-color: var(--pink); color: #eee; }
   .es-preset.active { background: var(--pink); color: #fff; border-color: var(--pink); }
 
+  .es-prompt-box { background: #0D0D1A; border: 1px solid var(--turquoise); border-radius: 8px; padding: 16px; font-family: 'SF Mono', 'Consolas', monospace; font-size: 11px; color: #ccc; white-space: pre-wrap; word-break: break-word; max-height: 400px; overflow-y: auto; line-height: 1.6; }
+  .es-copy-prompt { background: var(--turquoise); color: var(--dark); border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; margin-top: 10px; transition: 0.2s; }
+  .es-copy-prompt:hover { background: #00E5FF; }
+  .es-copied { background: var(--success) !important; }
+
   /* ═══════════════════════════════════════════ */
   /* USER JOURNEY WIREFRAMES                     */
   /* ═══════════════════════════════════════════ */
@@ -3166,6 +3171,16 @@ function updateAll(){syncControls();}
 // ECONOMY SIMULATOR ENGINE
 // ══════════════════════════════════════════════════
 
+// Seeded PRNG (mulberry32) for deterministic simulation
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
 const ES_TIERS = [
   { name: 'Tutorial', levels: [1,5], baseCoins: 5000, perStar: 500, maxCoins: 6500, avgStars: 2.5 },
   { name: 'Easy', levels: [6,15], baseCoins: 3000, perStar: 500, maxCoins: 4500, avgStars: 2.2 },
@@ -3308,6 +3323,12 @@ document.getElementById('tab-econsim').addEventListener('input', function() { es
 function esRunSim() {
   const p = esGetParams();
 
+  // Deterministic PRNG seeded from parameters (so same inputs = same output)
+  const seed = Math.round(p.startTickets * 1000 + p.startCoins + p.startGems * 100 +
+    p.regenHours * 10 + p.maxTickets * 50 + p.playHours * 7 +
+    (p.failRates['Easy'] || 0) * 999 + (p.failRates['Hard'] || 0) * 777);
+  const rng = mulberry32(seed);
+
   // State
   let coins = p.startCoins;
   let gems = p.startGems;
@@ -3348,11 +3369,14 @@ function esRunSim() {
     let dayLevelsCompleted = 0, dayLevelsFailed = 0, dayTicketsUsed = 0;
 
     // --- Ticket regeneration ---
-    const regenPerDay = Math.min(Math.floor(p.playHours / p.regenHours), p.maxTickets);
-    const ticketsFromRegen = Math.max(0, Math.min(regenPerDay, p.maxTickets - Math.min(tickets, p.maxTickets)) + Math.min(tickets, p.maxTickets) > p.maxTickets ? 0 : regenPerDay);
-    // Simpler: assume player starts day near 0 tickets (played yesterday), regens up
-    const effectiveRegen = Math.min(Math.floor(p.playHours / p.regenHours), p.maxTickets);
-    tickets = Math.min(tickets + effectiveRegen, tickets + effectiveRegen); // no cap on overflow from purchases
+    // Free tickets regenerate over time up to the max cap.
+    // Player gets floor(playHours / regenHours) tickets from regen,
+    // but only up to maxTickets total free tickets (overflow from purchases/ads are uncapped).
+    const regenSlots = Math.floor(p.playHours / p.regenHours);
+    // Free ticket pool is capped at maxTickets; anything above came from purchases/ads
+    const freeTickets = Math.min(tickets, p.maxTickets);
+    const ticketsFromRegen = Math.min(regenSlots, p.maxTickets - freeTickets);
+    tickets += ticketsFromRegen;
 
     // --- Daily login ---
     if (p.login) {
@@ -3400,7 +3424,7 @@ function esRunSim() {
 
       const tier = esGetTierForLevel(currentLevel);
       const failRate = p.failRates[tier.name] || 0;
-      const succeeded = Math.random() >= failRate;
+      const succeeded = rng() >= failRate;
 
       if (succeeded) {
         // Earn coins based on average stars
@@ -3650,6 +3674,14 @@ function esRenderResults(r) {
       <h3>Key Findings</h3>
       <div id="esFindings" style="font-size:13px;color:#ccc;line-height:1.7;"></div>
     </div>
+
+    <!-- Prompt Generator -->
+    <div class="es-card turq">
+      <h3>Claude Code Prompt Generator</h3>
+      <p style="font-size:12px;color:#888;margin-bottom:12px;">Copy this prompt and paste it into Claude Code at <code style="color:var(--gold);">C:\\appmachina\\Loto Loco</code> to apply economy fixes.</p>
+      <div class="es-prompt-box" id="esPromptBox"></div>
+      <button class="es-copy-prompt" onclick="esCopyPrompt()">Copy Prompt</button>
+    </div>
   `;
 
   // Draw charts
@@ -3679,6 +3711,107 @@ function esRenderResults(r) {
 
   if (findings.length === 0) findings.push(`<span style="color:var(--success)">&#10003;</span> Economy looks balanced within healthy parameters.`);
   document.getElementById('esFindings').innerHTML = findings.map(f => `<div style="padding:4px 0;border-bottom:1px solid #222;">${f}</div>`).join('');
+
+  // Generate Claude Code prompt
+  esGeneratePrompt(r, findings);
+}
+
+function esGeneratePrompt(r, findingsHtml) {
+  const el = document.getElementById('esPromptBox');
+  if (!el) return;
+  const fmt = n => Math.round(n).toLocaleString();
+  const pct = n => (n * 100).toFixed(1) + '%';
+
+  // Strip HTML from findings for plain text
+  const plainFindings = findingsHtml.map(f => f.replace(/<[^>]*>/g, '').trim());
+  // Filter to only warnings/issues (skip checkmarks and info)
+  const issues = plainFindings.filter(f => f.startsWith('\u26A0') || f.startsWith('\u2139'));
+  const warnings = plainFindings.filter(f => f.startsWith('\u26A0'));
+
+  // Build parameter summary
+  const p = r.p;
+  const archetype = document.querySelector('.es-preset.active')?.textContent || 'Custom';
+
+  // Build specific fix instructions based on findings
+  const fixes = [];
+
+  if (r.completionDay > 0 && r.completionDay < 45) {
+    fixes.push(`- Progression is too fast (${r.completionDay} days to complete 150 levels). In getLevelConfig() in LotoLocoCloudScript.js, reduce base coin rewards for Tutorial/Easy tiers or increase fail rates for later tiers.`);
+  }
+  if (r.finalCoins > 300000) {
+    fixes.push(`- Coin inflation detected (${fmt(r.finalCoins)} coins at end). Reduce level coin rewards in getLevelConfig() or add stronger coin sinks (higher power-up costs, new cosmetic purchases in STORE_DESIGN.md).`);
+  }
+  if (r.finalCoins < 5000 && r.totalLevelsCompleted > 50) {
+    fixes.push(`- Economy too punishing (only ${fmt(r.finalCoins)} coins after ${r.totalLevelsCompleted} levels). Increase base coin rewards in getLevelConfig() for Medium/Hard/VeryHard tiers.`);
+  }
+  if (r.totalGemsEarned - r.totalIAPGems < 100 && r.snapshots.length >= 30) {
+    fixes.push(`- F2P gem income too low (${fmt(r.totalGemsEarned - r.totalIAPGems)} non-IAP gems over ${r.snapshots.length} days). Add gem rewards to daily login rewards, leaderboard prizes, or milestone achievements in the CloudScript handlers.`);
+  }
+  if (r.overallFailRate > 0.45) {
+    fixes.push(`- Fail rate too high (${pct(r.overallFailRate)}). In getLevelConfig(), increase positive symbol chances (jokerChance, superJokerChance) or reduce blocker chances for Hard/VeryHard/Expert tiers.`);
+  }
+  if (r.overallFailRate < 0.15) {
+    fixes.push(`- Fail rate too low (${pct(r.overallFailRate)}). In getLevelConfig(), reduce spins given or increase blocker chance for Medium+ tiers to create monetisation pressure.`);
+  }
+  if (r.totalPiggyBreaks === 0 && r.p.piggy && r.snapshots.length > 14) {
+    fixes.push(`- Piggy bank never broken. Reduce piggy break gem costs in the ES_PIGGY_TIERS / PiggyBankWidget.cs or increase F2P gem income.`);
+  }
+  if (r.avgDailyCoins > 20000) {
+    fixes.push(`- Daily coin income too high (${fmt(r.avgDailyCoins)}/day). Reduce level rewards in getLevelConfig() or increase power-up/extra-spin costs.`);
+  }
+  if (r.avgDailyCoins < 8000 && r.totalLevelsCompleted > 20) {
+    fixes.push(`- Daily coin income too low (${fmt(r.avgDailyCoins)}/day). Increase level rewards in getLevelConfig() or add bonus coin sources (daily challenges, streak bonuses).`);
+  }
+  if (r.finalPiggy > 20000) {
+    fixes.push(`- ${fmt(r.finalPiggy)} coins stuck in piggy bank. Make piggy break costs cheaper or add free piggy break rewards at world milestones.`);
+  }
+
+  const prompt = `Update the LotoLoco economy based on the following simulation results.
+
+## Player Profile: ${archetype}
+- Play hours/day: ${p.playHours}
+- Ticket regen: 1 every ${p.regenHours}h, max ${p.maxTickets}
+- Revenue sources: ${[p.login ? 'Daily Login' : '', p.ads ? 'Ads' : '', p.iap ? 'IAP ($' + p.iapMonthlySpend + '/mo)' : '', p.piggy ? 'Piggy Bank' : '', p.leaderboard ? 'Leaderboards' : ''].filter(Boolean).join(', ') || 'None'}
+- Power-ups/level: ${p.powerupsPerLevel} (avg cost ${fmt(p.powerupCost)} coins)
+- Extra spins/level: ${p.extraSpinsPerLevel} (avg cost ${fmt(p.extraSpinCost)} coins)
+
+## Simulation Results (90-day)
+- Days to complete 150 levels: ${r.completionDay > 0 ? r.completionDay : '90+'}
+- Levels completed: ${r.totalLevelsCompleted} | Failed: ${r.totalLevelsFailed} | Fail rate: ${pct(r.overallFailRate)}
+- Total coins earned: ${fmt(r.totalCoinsEarned)} | spent: ${fmt(r.totalCoinsSpent)} | final balance: ${fmt(r.finalCoins)}
+- Total gems earned: ${fmt(r.totalGemsEarned)} | spent: ${fmt(r.totalGemsSpent)} | final balance: ${fmt(r.finalGems)}
+- Tickets used: ${fmt(r.totalTicketsUsed)}
+- Piggy bank breaks: ${r.totalPiggyBreaks} (recovered ${fmt(r.piggyCoinsRecovered)} coins)
+- Avg daily coin income (last 7d): ${fmt(r.avgDailyCoins)}
+- Avg daily tickets used (last 7d): ${r.avgDailyTickets.toFixed(1)}
+
+## Issues Found
+${fixes.length > 0 ? fixes.join('\n') : '- No issues found — economy is balanced.'}
+
+## Files to Update
+1. \`PlayFabCloudScript/LotoLocoCloudScript.js\` — getLevelConfig() function contains all level difficulty tuning (spins, symbol chances, board size) and reward values
+2. \`docs/ECONOMY_DESIGN.md\` — Economy design doc with pricing tables, reward schedules, and balance targets
+3. \`STORE_DESIGN.md\` — Store pricing, power-up costs, gem pack values, piggy bank tiers
+4. \`docs/LEVEL_DESIGN.md\` — Level difficulty curve, world progression
+
+## Rules
+- Maintain the 1 gem = 100 coins conversion ratio across all items
+- All currency changes must go through CloudScript (server-authoritative)
+- Wild/positive symbol chance must ALWAYS exceed blocker chance
+- Target healthy ranges: coins/day 8K-20K, fail rate 15-45%, tickets/day 3-10
+- Update the design docs to match any code changes`;
+
+  el.textContent = prompt;
+}
+
+function esCopyPrompt() {
+  const text = document.getElementById('esPromptBox')?.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text);
+  const btn = event.target;
+  btn.textContent = 'Copied!';
+  btn.classList.add('es-copied');
+  setTimeout(() => { btn.textContent = 'Copy Prompt'; btn.classList.remove('es-copied'); }, 2000);
 }
 
 // ── Chart drawing (pure Canvas, no libraries) ──
