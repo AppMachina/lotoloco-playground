@@ -4277,14 +4277,12 @@ function esRunSim() {
     let dayLevelsCompleted = 0, dayLevelsFailed = 0, dayTicketsUsed = 0;
 
     // --- Ticket regeneration ---
-    // Free tickets regenerate over time up to the max cap.
-    // Player gets floor(playHours / regenHours) tickets from regen,
-    // but only up to maxTickets total free tickets (overflow from purchases/ads are uncapped).
-    const regenSlots = Math.floor(p.playHours / p.regenHours);
-    // Free ticket pool is capped at maxTickets; anything above came from purchases/ads
-    const freeTickets = Math.min(tickets, p.maxTickets);
-    const ticketsFromRegen = Math.min(regenSlots, p.maxTickets - freeTickets);
-    tickets += ticketsFromRegen;
+    // Overnight: tickets regen up to maxTickets cap while player is away.
+    // During active play: player uses tickets as they play, so regen slots
+    // are consumed and refilled continuously — cap doesn't limit active regen.
+    tickets = Math.min(tickets, p.maxTickets); // overnight cap
+    const activeRegen = Math.floor(p.playHours / p.regenHours);
+    tickets += activeRegen;
 
     // --- Daily login ---
     if (p.login) {
