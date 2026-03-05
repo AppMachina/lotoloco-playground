@@ -337,6 +337,60 @@
   .es-copied { background: var(--success) !important; }
 
   /* ═══════════════════════════════════════════ */
+  /* POST-LAUNCH ROADMAP                         */
+  /* ═══════════════════════════════════════════ */
+  .roadmap-wrap { padding: 32px; max-width: 1200px; margin: 0 auto; }
+  .roadmap-intro { font-size: 14px; color: #999; margin-bottom: 28px; line-height: 1.6; }
+  .roadmap-intro strong { color: var(--turquoise); }
+
+  .gantt { position: relative; }
+  .gantt-phase-row { margin-bottom: 32px; }
+  .gantt-phase-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 1px solid #333; }
+  .gantt-phase-label.p1 { color: var(--turquoise); }
+  .gantt-phase-label.p2 { color: var(--gold); }
+  .gantt-phase-label.p3 { color: var(--pink); }
+  .gantt-phase-label.p4 { color: var(--purple); }
+
+  .gantt-track { display: flex; align-items: stretch; gap: 10px; margin-bottom: 8px; min-height: 54px; }
+  .gantt-label { width: 180px; min-width: 180px; display: flex; align-items: center; font-size: 13px; color: #ccc; font-weight: 600; }
+  .gantt-bar-area { flex: 1; position: relative; display: flex; align-items: center; }
+  .gantt-bar { position: relative; height: 42px; border-radius: 8px; display: flex; align-items: center; padding: 0 14px; font-size: 11px; color: #fff; font-weight: 600; cursor: pointer; transition: filter 0.2s, transform 0.2s; overflow: hidden; }
+  .gantt-bar:hover { filter: brightness(1.2); transform: translateY(-1px); }
+  .gantt-bar .gantt-effort { position: absolute; right: 10px; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; font-weight: 700; }
+  .gantt-bar .gantt-impact { position: absolute; right: 10px; top: 4px; font-size: 8px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; }
+
+  .gantt-bar.turq { background: linear-gradient(135deg, #00838F, #00BCD4); }
+  .gantt-bar.gold { background: linear-gradient(135deg, #E65100, #FFB300); }
+  .gantt-bar.pink { background: linear-gradient(135deg, #AD1457, #E91E63); }
+  .gantt-bar.purple { background: linear-gradient(135deg, #4A148C, #7B1FA2); }
+  .gantt-bar.green { background: linear-gradient(135deg, #1B5E20, #4CAF50); }
+
+  .gantt-legend { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+  .gantt-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888; }
+  .gantt-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  .gantt-detail { display: none; background: var(--surface); border: 1px solid #333; border-radius: 10px; padding: 16px 20px; margin: -2px 0 10px 190px; font-size: 12px; color: #bbb; line-height: 1.7; }
+  .gantt-detail.open { display: block; }
+  .gantt-detail h4 { color: var(--gold); font-size: 14px; margin-bottom: 8px; }
+  .gantt-detail ul { padding-left: 18px; margin: 6px 0; }
+  .gantt-detail li { margin: 3px 0; }
+  .gantt-detail .why { color: var(--turquoise); font-style: italic; margin-bottom: 8px; }
+  .gantt-detail .effort-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-right: 6px; }
+  .gantt-detail .effort-tag.low { background: rgba(76,175,80,0.2); color: var(--success); }
+  .gantt-detail .effort-tag.med { background: rgba(255,179,0,0.2); color: var(--gold); }
+  .gantt-detail .effort-tag.high { background: rgba(233,30,99,0.2); color: var(--pink); }
+
+  .roadmap-priority { margin-top: 40px; }
+  .roadmap-priority h3 { font-size: 16px; color: var(--pink); margin-bottom: 14px; }
+  .priority-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .priority-table th { text-align: left; padding: 8px 12px; color: var(--turquoise); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #333; background: var(--surface); }
+  .priority-table td { padding: 8px 12px; border-bottom: 1px solid #222; color: #ccc; }
+  .priority-table .rank { color: var(--gold); font-weight: 800; font-family: 'SF Mono', monospace; font-size: 14px; }
+  .priority-table .hi { color: var(--success); font-weight: 600; }
+  .priority-table .mi { color: var(--gold); font-weight: 600; }
+  .priority-table .lo { color: #888; font-weight: 600; }
+
+  /* ═══════════════════════════════════════════ */
   /* USER JOURNEY WIREFRAMES                     */
   /* ═══════════════════════════════════════════ */
   .journey-flow { display: flex; flex-direction: column; gap: 0; margin: 24px 0; position: relative; }
@@ -427,6 +481,7 @@
     <button class="tab" onclick="switchTab('technical')">Technical Architecture</button>
     <button class="tab" onclick="switchTab('playground')">Play the Game</button>
     <button class="tab" onclick="switchTab('econsim')">Economy Simulator</button>
+    <button class="tab" onclick="switchTab('roadmap')">Post-Launch Roadmap</button>
   </div>
 </div>
 
@@ -2888,6 +2943,299 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: POST-LAUNCH ROADMAP                  -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-content" id="tab-roadmap">
+  <div class="roadmap-wrap">
+    <div class="roadmap-intro">
+      Post-launch features that turn a launched game into a <strong>live-service business</strong>. Identified through competitive analysis vs. Slingo Adventure, Coin Master, Royal Match, and Bingo Blitz. Click any bar for details.
+    </div>
+
+    <div class="gantt-legend">
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--turquoise)"></div> Retention</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--gold)"></div> Social</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--pink)"></div> Revenue</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--purple)"></div> Endgame</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--success)"></div> Operations</div>
+      <div class="gantt-legend-item" style="margin-left:auto;"><span style="opacity:0.5;">Bar width = relative effort</span></div>
+    </div>
+
+    <div class="gantt">
+
+      <!-- Phase 1: Retention Hooks -->
+      <div class="gantt-phase-row">
+        <div class="gantt-phase-label p1">Phase 1 &mdash; Retention Hooks</div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Collection System</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar turq" style="width:55%;" onclick="toggleGanttDetail('d-collection')">
+              Loter&iacute;a Card Gallery
+              <span class="gantt-effort">Medium</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-collection">
+          <h4>Collection System &mdash; Loter&iacute;a Card Gallery</h4>
+          <div class="why">Creates a parallel progression layer beyond level completion. Coin Master's card collection is their single most powerful retention mechanic.</div>
+          <span class="effort-tag med">Medium Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">High Retention Impact</span>
+          <ul>
+            <li>Players collect 54 Loter&iacute;a cards through gameplay — cards drop randomly on match</li>
+            <li>Rarity tiers: <strong>Common</strong> (30), <strong>Uncommon</strong> (12), <strong>Rare</strong> (8), <strong>Legendary</strong> (4)</li>
+            <li>Themed sets ("La Familia," "Los Animales," "La Fiesta," "El Cielo") — completing a set grants gems</li>
+            <li>Duplicates can be gifted to friends or recycled for coins</li>
+            <li>Gallery screen with silhouettes for undiscovered cards</li>
+            <li>Season Pass premium track could include exclusive card variants (gold-bordered, animated)</li>
+          </ul>
+        </div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Push Notifications</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar turq" style="width:25%;" onclick="toggleGanttDetail('d-push')">
+              Strategic Return Hooks
+              <span class="gantt-effort">Low</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-push">
+          <h4>Push Notification Strategy</h4>
+          <div class="why">Ticket regeneration and daily login streaks require the player to remember to come back. Notifications close that gap.</div>
+          <span class="effort-tag low">Low Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">High Retention Impact</span>
+          <ul>
+            <li>"Your tickets are full!" &mdash; when 5 tickets available</li>
+            <li>"Your daily streak is at risk!" &mdash; 2 hours before daily reset</li>
+            <li>"Your piggy bank is almost full!" &mdash; at 80% capacity</li>
+            <li>"New daily deals!" &mdash; when deals rotate</li>
+            <li>"Your friends need help!" &mdash; social feature trigger</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Phase 2: Social Systems -->
+      <div class="gantt-phase-row">
+        <div class="gantt-phase-label p2">Phase 2 &mdash; Social Systems</div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Friend System</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar gold" style="width:50%;" onclick="toggleGanttDetail('d-friends')">
+              PlayFab Friends + Leaderboards
+              <span class="gantt-effort">Medium</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-friends">
+          <h4>Friend System</h4>
+          <div class="why">Social connections are the single biggest predictor of long-term retention in casual games. Candy Crush's life-gifting system is famously one of King's best retention hooks.</div>
+          <span class="effort-tag med">Medium Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">High Retention Impact</span>
+          <ul>
+            <li>Add friends via PlayFab, Facebook, Apple Game Center</li>
+            <li>Friend list: avatar, level, last-active time</li>
+            <li>Friends highlighted on weekly/monthly leaderboards</li>
+            <li>Referral bonus: both players get 500 coins + 1 ticket</li>
+            <li>Max 50 friends (same as Coin Master)</li>
+          </ul>
+        </div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Gifting</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar gold" style="width:50%;" onclick="toggleGanttDetail('d-gifting')">
+              Daily Gift Reciprocity Loop
+              <span class="gantt-effort">Medium</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-gifting">
+          <h4>Gifting System</h4>
+          <div class="why">Gifting creates reciprocity loops &mdash; "they sent me a ticket, I should send one back." Drives daily engagement even without personal motivation.</div>
+          <span class="effort-tag med">Medium Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">High Retention Impact</span>
+          <ul>
+            <li>Send 1 free ticket OR 500 coins to a friend (daily limit per friend)</li>
+            <li>Gifts appear as popup on app launch</li>
+            <li>Gift is generated, not transferred &mdash; costs the sender nothing</li>
+            <li>Receive limit: 5 gifts per day (prevents alt-account exploitation)</li>
+          </ul>
+        </div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Clubs (Familias)</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar gold" style="width:80%;" onclick="toggleGanttDetail('d-clubs')">
+              20-Player Groups + Club Challenges
+              <span class="gantt-effort">High</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-clubs">
+          <h4>Clubs &mdash; Familias</h4>
+          <div class="why">Club membership creates social obligation &mdash; "I can't let my familia down." The deepest retention hook in social games.</div>
+          <span class="effort-tag high">High Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">High Retention Impact</span>
+          <ul>
+            <li>Create or join a "Familia" (up to 20 players)</li>
+            <li>Club leaderboard: combined weekly stars of all members</li>
+            <li>Club challenges: "Complete 100 levels as a club this week"</li>
+            <li>Club chat: pre-set messages only (avoids moderation costs)</li>
+            <li>Club rewards: bonus coins for all members when goals are met</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Phase 3: Live Operations -->
+      <div class="gantt-phase-row">
+        <div class="gantt-phase-label p3">Phase 3 &mdash; Live Operations</div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Event System</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar pink" style="width:85%;" onclick="toggleGanttDetail('d-events')">
+              Tournaments + Holiday Events + Special Boards
+              <span class="gantt-effort">High</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-events">
+          <h4>Event System</h4>
+          <div class="why">Events create urgency (FOMO) and revenue spikes. Candy Crush's All-Stars tournament generated $108M in a single month.</div>
+          <span class="effort-tag high">High Effort</span> <span class="effort-tag" style="background:rgba(233,30,99,0.2);color:var(--pink)">High Revenue Impact</span>
+          <ul>
+            <li><strong>Weekend Tournament:</strong> 48 hours, separate leaderboard, themed rewards</li>
+            <li><strong>Holiday Events:</strong> D&iacute;a de los Muertos, Cinco de Mayo, D&iacute;a de los Reyes, Las Posadas, Carnaval</li>
+            <li><strong>Challenge Events:</strong> "Clear 10 boards in 24 hours" with milestone rewards</li>
+            <li><strong>Special Board Events:</strong> All-wild reels, double Diablitos, giant 7&times;7 board</li>
+          </ul>
+          <div style="margin-top:10px;">
+            <strong style="color:var(--gold);">Holiday Calendar:</strong>
+            <table style="width:100%;font-size:11px;margin-top:6px;border-collapse:collapse;">
+              <tr style="border-bottom:1px solid #333;"><td style="padding:4px 8px;color:var(--turquoise);">January</td><td style="padding:4px;">D&iacute;a de los Reyes &mdash; Gift-giving, 3 Kings</td></tr>
+              <tr style="border-bottom:1px solid #333;"><td style="padding:4px 8px;color:var(--turquoise);">February</td><td style="padding:4px;">Carnaval &mdash; Masks, confetti, dancing</td></tr>
+              <tr style="border-bottom:1px solid #333;"><td style="padding:4px 8px;color:var(--turquoise);">May</td><td style="padding:4px;">Cinco de Mayo &mdash; Battle of Puebla, fiesta</td></tr>
+              <tr style="border-bottom:1px solid #333;"><td style="padding:4px 8px;color:var(--turquoise);">Oct&ndash;Nov</td><td style="padding:4px;">D&iacute;a de los Muertos &mdash; Marigolds, altars, ancestors</td></tr>
+              <tr><td style="padding:4px 8px;color:var(--turquoise);">December</td><td style="padding:4px;">Las Posadas &mdash; Pi&ntilde;atas, candles, processions</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Cosmetics System</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar pink" style="width:55%;" onclick="toggleGanttDetail('d-cosmetics')">
+              Card Backs, Themes, Markers, Frames
+              <span class="gantt-effort">Medium</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-cosmetics">
+          <h4>Cosmetics System</h4>
+          <div class="why">Cosmetics are a proven non-pay-to-win monetisation layer. They give paying players visible status without gameplay advantage.</div>
+          <span class="effort-tag med">Medium Effort</span> <span class="effort-tag" style="background:rgba(233,30,99,0.2);color:var(--pink)">Medium Revenue Impact</span>
+          <ul>
+            <li><strong>Card Backs:</strong> Visible on social/leaderboard. Unlocked through collection, events, or purchase</li>
+            <li><strong>Board Themes:</strong> Visual reskin (El Mercado, La Playa tropical, D&iacute;a de Muertos marigold, etc.)</li>
+            <li><strong>Daub Markers:</strong> Different match styles (classic circle, heart, star, skull, etc.)</li>
+            <li><strong>Profile Frames:</strong> Border around avatar on leaderboards. Earned from ranking high</li>
+            <li><strong>Name Effects:</strong> Animated name (gold, fire, rainbow, etc.) &mdash; 10 effects with gem pricing</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Phase 4: Endgame -->
+      <div class="gantt-phase-row">
+        <div class="gantt-phase-label p4">Phase 4 &mdash; Endgame</div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Endless Mode</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar purple" style="width:55%;" onclick="toggleGanttDetail('d-endless')">
+              Procedural Boards + Escalating Difficulty
+              <span class="gantt-effort">Medium</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-endless">
+          <h4>Endless Mode</h4>
+          <div class="why">Players who complete all content churn immediately. Endless mode gives completionists infinite replayability.</div>
+          <span class="effort-tag med">Medium Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">Medium Retention Impact</span>
+          <ul>
+            <li>Unlocks after level 150 (or as separate mode at level 50)</li>
+            <li>Board difficulty increases every 5 rounds (more locked cells, more blockers, larger boards)</li>
+            <li>No ticket cost (or reduced) &mdash; it's retention, not monetisation</li>
+            <li>Personal best leaderboard</li>
+            <li>Milestone rewards every 10 rounds (coins, gems, exclusive cosmetics)</li>
+          </ul>
+        </div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Hard Mode Replays</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar purple" style="width:25%;" onclick="toggleGanttDetail('d-hardmode')">
+              Modified Rules + Bonus Rewards
+              <span class="gantt-effort">Low</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-hardmode">
+          <h4>Hard Mode Replays</h4>
+          <div class="why">Doubles content without creating new levels. Gives star-hunters a reason to replay.</div>
+          <span class="effort-tag low">Low Effort</span> <span class="effort-tag" style="background:rgba(0,188,212,0.2);color:var(--turquoise)">Low Retention Impact</span>
+          <ul>
+            <li>"Hard Mode" toggle on completed levels</li>
+            <li>Modifications: fewer spins (&minus;2), more blockers (+2%), more locked cells (+2)</li>
+            <li>Rewards: bonus stars, exclusive "hard mode" badge, extra coins</li>
+            <li>Hard mode stars tracked separately (don't overwrite normal stars)</li>
+          </ul>
+        </div>
+
+        <div class="gantt-track">
+          <div class="gantt-label">Content Velocity</div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar green" style="width:100%;" onclick="toggleGanttDetail('d-velocity')">
+              Ongoing &mdash; Weekly Challenges &rarr; Monthly Levels &rarr; Quarterly Worlds
+              <span class="gantt-effort">Ongoing</span>
+            </div>
+          </div>
+        </div>
+        <div class="gantt-detail" id="d-velocity">
+          <h4>Content Velocity Plan</h4>
+          <div class="why">Sustains the live game with predictable content cadence to prevent churn between major updates.</div>
+          <span class="effort-tag" style="background:rgba(76,175,80,0.2);color:var(--success)">Ongoing</span>
+          <table style="width:100%;font-size:12px;margin-top:10px;border-collapse:collapse;">
+            <tr style="border-bottom:2px solid #333;color:var(--turquoise);font-size:10px;text-transform:uppercase;letter-spacing:1px;">
+              <th style="padding:6px 10px;text-align:left;">Cadence</th><th style="padding:6px 10px;text-align:left;">Content</th><th style="padding:6px 10px;text-align:left;">Effort</th>
+            </tr>
+            <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">Weekly</td><td style="padding:6px 10px;color:#ccc;">New daily/weekly challenges</td><td style="padding:6px 10px;color:var(--success);">Low (data config)</td></tr>
+            <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">Bi-weekly</td><td style="padding:6px 10px;color:#ccc;">New daily deal rotations</td><td style="padding:6px 10px;color:var(--success);">Low (data config)</td></tr>
+            <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">Monthly</td><td style="padding:6px 10px;color:#ccc;">15&ndash;30 new levels</td><td style="padding:6px 10px;color:var(--gold);">Medium</td></tr>
+            <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">6 weeks</td><td style="padding:6px 10px;color:#ccc;">New Season Pass theme</td><td style="padding:6px 10px;color:var(--gold);">Medium</td></tr>
+            <tr><td style="padding:6px 10px;color:#ccc;">Quarterly</td><td style="padding:6px 10px;color:#ccc;">New world or event type</td><td style="padding:6px 10px;color:var(--pink);">High</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Priority summary -->
+    <div class="roadmap-priority">
+      <h3>Priority Ranking</h3>
+      <table class="priority-table">
+        <tr><th>#</th><th>Feature</th><th>Impact</th><th>Effort</th><th>Phase</th></tr>
+        <tr><td class="rank">1</td><td>Collection System</td><td class="hi">High retention</td><td class="mi">Medium</td><td>1</td></tr>
+        <tr><td class="rank">2</td><td>Push Notifications</td><td class="hi">High retention</td><td class="hi" style="color:var(--success)">Low</td><td>1</td></tr>
+        <tr><td class="rank">3</td><td>Friend System</td><td class="hi">High retention</td><td class="mi">Medium</td><td>2</td></tr>
+        <tr><td class="rank">4</td><td>Gifting</td><td class="hi">High retention</td><td class="mi">Medium</td><td>2</td></tr>
+        <tr><td class="rank">5</td><td>Event System</td><td class="hi">High revenue</td><td class="lo" style="color:var(--pink)">High</td><td>3</td></tr>
+        <tr><td class="rank">6</td><td>Cosmetics</td><td class="mi">Medium revenue</td><td class="mi">Medium</td><td>3</td></tr>
+        <tr><td class="rank">7</td><td>Clubs (Familias)</td><td class="hi">High retention</td><td class="lo" style="color:var(--pink)">High</td><td>2&ndash;3</td></tr>
+        <tr><td class="rank">8</td><td>Endless Mode</td><td class="mi">Medium retention</td><td class="mi">Medium</td><td>4</td></tr>
+        <tr><td class="rank">9</td><td>Hard Mode Replays</td><td class="lo">Low retention</td><td class="hi" style="color:var(--success)">Low</td><td>4</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
 <div class="loco-banner" id="locoBanner">&#161;LOCO!</div>
 <div class="game-over" id="gameOver">
   <h2>&#161;Nivel Completo!</h2>
@@ -2912,6 +3260,16 @@ function switchTab(name) {
   const isPlayground = name === 'playground';
   document.getElementById('log').style.display = isPlayground ? 'block' : 'none';
   document.querySelector('.prompt-section').style.display = isPlayground ? 'flex' : 'none';
+}
+
+// ── Gantt detail toggle ──
+function toggleGanttDetail(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  // Close all others
+  document.querySelectorAll('.gantt-detail.open').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
 }
 
 // ── Journey phase filtering ──
