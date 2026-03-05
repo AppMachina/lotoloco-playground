@@ -3681,12 +3681,6 @@ document.getElementById('tab-econsim').addEventListener('input', function() { es
 function esRunSim() {
   const p = esGetParams();
 
-  // Deterministic PRNG seeded from parameters (so same inputs = same output)
-  const seed = Math.round(p.startTickets * 1000 + p.startCoins + p.startGems * 100 +
-    p.regenHours * 10 + p.maxTickets * 50 + p.playHours * 7 +
-    (p.failRates['Easy'] || 0) * 999 + (p.failRates['Hard'] || 0) * 777);
-  const rng = mulberry32(seed);
-
   // State
   let coins = p.startCoins;
   let gems = p.startGems;
@@ -3706,6 +3700,7 @@ function esRunSim() {
   let totalAdRevenue = 0;
   let totalIAPGems = 0;
   let completionDay = -1;
+  let levelProgress = 0; // fractional level progress accumulator
 
   // Starter bundle (day 0)
   if (p.iap && p.starterBundle) {
@@ -3772,7 +3767,10 @@ function esRunSim() {
       }
     }
 
-    // --- Play levels ---
+    // --- Play levels (expected-value model, fully deterministic) ---
+    // Each ticket is one attempt. With fail rate F, on average it takes
+    // 1/(1-F) attempts to pass a level. We use fractional accounting:
+    // each ticket contributes (1-F) of a level completion and F of a failure.
     let availableTickets = Math.floor(tickets);
     while (availableTickets > 0 && currentLevel <= 150) {
       availableTickets--;
@@ -3782,62 +3780,66 @@ function esRunSim() {
 
       const tier = esGetTierForLevel(currentLevel);
       const failRate = p.failRates[tier.name] || 0;
-      const succeeded = rng() >= failRate;
+      const passRate = 1 - failRate;
 
-      if (succeeded) {
-        // Earn coins based on average stars
-        const starBonus = Math.round(tier.avgStars) * tier.perStar;
-        const levelReward = tier.baseCoins + starBonus;
-        coins += levelReward; dayCoinsIn += levelReward;
-        totalCoinsEarned += levelReward;
+      // --- Success portion (passRate fraction of this attempt) ---
+      const starBonus = Math.round(tier.avgStars) * tier.perStar;
+      const levelReward = tier.baseCoins + starBonus;
+      const earnedCoins = levelReward * passRate;
+      coins += earnedCoins; dayCoinsIn += earnedCoins;
+      totalCoinsEarned += earnedCoins;
 
-        // Ad double coins
-        if (p.ads && p.adDoublePerDay > 0 && dayLevelsCompleted < p.adDoublePerDay) {
-          coins += levelReward; dayCoinsIn += levelReward;
-          totalCoinsEarned += levelReward;
-          totalAdRevenue += levelReward;
-        }
+      // Ad double coins
+      if (p.ads && p.adDoublePerDay > 0 && dayLevelsCompleted < p.adDoublePerDay) {
+        const adBonus = levelReward * passRate;
+        coins += adBonus; dayCoinsIn += adBonus;
+        totalCoinsEarned += adBonus;
+        totalAdRevenue += adBonus;
+      }
 
-        // Piggy bank: 10% of earned coins
-        if (p.piggy) {
-          piggyCoins += Math.round(levelReward * 0.1);
-        }
+      // Piggy bank: 10% of earned coins (success portion)
+      if (p.piggy) {
+        piggyCoins += earnedCoins * 0.1;
+      }
 
-        // Spend on power-ups
-        const puCost = Math.round(p.powerupsPerLevel * p.powerupCost);
-        if (coins >= puCost) {
-          coins -= puCost; dayCoinsOut += puCost; totalCoinsSpent += puCost;
-        }
+      // Power-up spend on success
+      const puCost = Math.round(p.powerupsPerLevel * p.powerupCost) * passRate;
+      if (coins >= puCost) {
+        coins -= puCost; dayCoinsOut += puCost; totalCoinsSpent += puCost;
+      }
 
-        // Spend on extra spins
-        const esCost = Math.round(p.extraSpinsPerLevel * p.extraSpinCost);
-        if (coins >= esCost) {
-          coins -= esCost; dayCoinsOut += esCost; totalCoinsSpent += esCost;
-        }
+      // Extra spin spend on success
+      const esCost = Math.round(p.extraSpinsPerLevel * p.extraSpinCost) * passRate;
+      if (coins >= esCost) {
+        coins -= esCost; dayCoinsOut += esCost; totalCoinsSpent += esCost;
+      }
 
-        dayLevelsCompleted++;
-        totalLevelsCompleted++;
+      // --- Failure portion (failRate fraction of this attempt) ---
+      dayLevelsFailed += failRate;
+      totalLevelsFailed += failRate;
+
+      if (p.failReward) {
+        const partialReward = Math.round(tier.baseCoins * p.failRewardPct) * failRate;
+        coins += partialReward; dayCoinsIn += partialReward;
+        totalCoinsEarned += partialReward;
+        if (p.piggy) piggyCoins += partialReward * 0.1;
+      }
+
+      // Power-up spend on failure (half rate)
+      const failPuCost = Math.round(p.powerupsPerLevel * p.powerupCost * 0.5) * failRate;
+      if (coins >= failPuCost) {
+        coins -= failPuCost; dayCoinsOut += failPuCost; totalCoinsSpent += failPuCost;
+      }
+
+      // --- Level progression ---
+      // Track fractional progress; advance level when we accumulate >= 1 completion
+      dayLevelsCompleted += passRate;
+      totalLevelsCompleted += passRate;
+      levelProgress += passRate;
+      while (levelProgress >= 1 && currentLevel <= 150) {
+        levelProgress -= 1;
         currentLevel++;
         if (currentLevel > 150 && completionDay < 0) completionDay = day;
-      } else {
-        // Failed level
-        dayLevelsFailed++;
-        totalLevelsFailed++;
-
-        // Partial failure reward
-        if (p.failReward) {
-          const tier2 = esGetTierForLevel(currentLevel);
-          const partialReward = Math.round(tier2.baseCoins * p.failRewardPct);
-          coins += partialReward; dayCoinsIn += partialReward;
-          totalCoinsEarned += partialReward;
-          if (p.piggy) piggyCoins += Math.round(partialReward * 0.1);
-        }
-
-        // Still spent power-ups on failed attempt (reduced)
-        const failPuCost = Math.round(p.powerupsPerLevel * p.powerupCost * 0.5);
-        if (coins >= failPuCost) {
-          coins -= failPuCost; dayCoinsOut += failPuCost; totalCoinsSpent += failPuCost;
-        }
       }
     }
 
@@ -3883,7 +3885,9 @@ function esRunSim() {
 
   esRenderResults({
     snapshots, p, completionDay,
-    totalLevelsCompleted, totalLevelsFailed, totalAttempts,
+    totalLevelsCompleted: Math.round(totalLevelsCompleted),
+    totalLevelsFailed: Math.round(totalLevelsFailed),
+    totalAttempts: Math.round(totalAttempts),
     totalCoinsEarned, totalCoinsSpent, totalGemsEarned, totalGemsSpent,
     totalTicketsUsed, totalPiggyBreaks, piggyCoinsRecovered,
     totalAdRevenue, totalIAPGems,
