@@ -4816,6 +4816,7 @@ function esDrawDualBarChart(canvasId, labels, dataIn, dataOut) {
   }
 
   const barW = Math.max(1, (gW / labels.length) * 0.4);
+  const bars = [];
   dataIn.forEach((v, i) => {
     const x = pad.left + (i / labels.length) * gW;
     const hIn = (v / maxVal) * gH;
@@ -4824,6 +4825,7 @@ function esDrawDualBarChart(canvasId, labels, dataIn, dataOut) {
     ctx.fillRect(x, pad.top + gH - hIn, barW, hIn);
     ctx.fillStyle = 'rgba(198, 40, 40, 0.7)';
     ctx.fillRect(x + barW, pad.top + gH - hOut, barW, hOut);
+    bars.push({ x, barW: barW * 2, day: labels[i], coinIn: v, coinOut: dataOut[i] });
   });
 
   // Legend
@@ -4840,6 +4842,30 @@ function esDrawDualBarChart(canvasId, labels, dataIn, dataOut) {
     const x = pad.left + (i / labels.length) * gW;
     ctx.fillText('D' + labels[i], x, H - 5);
   }
+
+  // Tooltip on hover
+  let tooltip = canvas.parentElement.querySelector('.es-bar-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.className = 'es-bar-tooltip';
+    tooltip.style.cssText = 'position:absolute;pointer-events:none;background:#1A1A2E;border:1px solid #FFB300;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;line-height:1.5;display:none;z-index:10;white-space:nowrap;';
+    canvas.parentElement.style.position = 'relative';
+    canvas.parentElement.appendChild(tooltip);
+  }
+  canvas.onmousemove = function(e) {
+    const cr = canvas.getBoundingClientRect();
+    const mx = e.clientX - cr.left;
+    const hit = bars.find(b => mx >= b.x && mx <= b.x + b.barW);
+    if (hit) {
+      tooltip.innerHTML = `<strong>Day ${hit.day}</strong><br><span style="color:#4CAF50">In: ${Math.round(hit.coinIn).toLocaleString()}</span><br><span style="color:#C62828">Out: ${Math.round(hit.coinOut).toLocaleString()}</span><br>Net: ${Math.round(hit.coinIn - hit.coinOut).toLocaleString()}`;
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(mx + 12, canvas.clientWidth - tooltip.offsetWidth - 4) + 'px';
+      tooltip.style.top = (e.clientY - cr.top - tooltip.offsetHeight - 8) + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  };
+  canvas.onmouseleave = function() { tooltip.style.display = 'none'; };
 }
 
 // ── End Economy Simulator ──
