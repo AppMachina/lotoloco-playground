@@ -4608,11 +4608,12 @@ function esRenderResults(r) {
     </div>
   `;
 
-  // Draw charts
-  esDrawLineChart('esCoinChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.coins), 'Coins', '#FFB300');
-  esDrawLineChart('esGemChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.gems), 'Gems', '#7B1FA2');
-  esDrawLineChart('esLevelChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.level), 'Level', '#00BCD4');
-  esDrawDualBarChart('esCoinFlowChart', r.snapshots.map(s => s.day), r.snapshots.map(s => s.dayCoinsIn), r.snapshots.map(s => s.dayCoinsOut));
+  // Draw charts (first 15 days only)
+  const chartDays = r.snapshots.slice(0, 15);
+  esDrawLineChart('esCoinChart', chartDays.map(s => s.day), chartDays.map(s => s.coins), 'Coins', '#FFB300');
+  esDrawLineChart('esGemChart', chartDays.map(s => s.day), chartDays.map(s => s.gems), 'Gems', '#7B1FA2');
+  esDrawLineChart('esLevelChart', chartDays.map(s => s.day), chartDays.map(s => s.level), 'Level', '#00BCD4');
+  esDrawDualBarChart('esCoinFlowChart', chartDays.map(s => s.day), chartDays.map(s => s.dayCoinsIn), chartDays.map(s => s.dayCoinsOut));
 
   // Generate findings
   const findings = [];
