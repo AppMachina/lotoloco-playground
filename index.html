@@ -691,7 +691,7 @@
           <div class="feature-card gold">
             <div class="fc-icon">&#127903;</div>
             <h3>1. Spend a Ticket</h3>
-            <p>Each level costs 1 ticket to enter. Tickets regenerate 1 every 2 hours (max 5). This energy gate creates natural session breaks and return-visit motivation.</p>
+            <p>Each level costs 1 ticket to enter. Tickets regenerate 1 every 2 hours both offline (capped at 5) and during active play (uncapped). This energy gate creates natural session breaks and return-visit motivation.</p>
           </div>
           <div class="feature-card turq">
             <div class="fc-icon">&#127920;</div>
@@ -881,7 +881,7 @@
         </div>
         <div class="callout">
           <strong>1 gem = 100 coins</strong>
-          <p>Base conversion ratio for power-up dual pricing (e.g. Extra Spin: 500 coins or 5 gems). Bulk purchases like coin packs and the piñata bank offer better rates by design to incentivise larger transactions.</p>
+          <p>Base conversion ratio for power-up dual pricing (e.g. Extra Spin: 5,000 coins or 50 gems). Bulk purchases like coin packs and the piñata bank offer better rates by design to incentivise larger transactions.</p>
         </div>
         <div class="mini-stats">
           <div class="mini-stat"><span class="ms-val">5 / 25K / 5</span><span class="ms-label">Starting balance (TK / CN / GM)</span></div>
@@ -900,7 +900,7 @@
             <tr><th>Loteria Name</th><th>Power-Up</th><th>Effect</th><th>Coins</th><th>Gems</th><th>Rarity</th></tr>
           </thead>
           <tbody>
-            <tr><td>El Corazon</td><td>Extra Spin</td><td>+1 spin</td><td class="num">500</td><td class="num">5</td><td>Common</td></tr>
+            <tr><td>El Corazon</td><td>Extra Spin</td><td>+1 spin (escalating)</td><td class="num">5,000</td><td class="num">50</td><td>Common</td></tr>
             <tr><td>La Estrella</td><td>Reveal</td><td>Shows best card to mark</td><td class="num">1,000</td><td class="num">10</td><td>Common</td></tr>
             <tr><td>El Comodin</td><td>Column Wild</td><td>Mark any card in one column</td><td class="num">1,500</td><td class="num">15</td><td>Uncommon</td></tr>
             <tr><td>El Valiente</td><td>Remove Blocker</td><td>Removes a Diablito</td><td class="num">2,000</td><td class="num">20</td><td>Rare</td></tr>
@@ -1031,7 +1031,7 @@
         </div>
         <div class="callout">
           <strong>1 gem = 100 coins</strong>
-          <p>Base conversion ratio for power-up dual pricing (e.g. Extra Spin: 500 coins or 5 gems). Bulk purchases like coin packs and the piñata bank offer better rates by design to incentivise larger transactions.</p>
+          <p>Base conversion ratio for power-up dual pricing (e.g. Extra Spin: 5,000 coins or 50 gems). Bulk purchases like coin packs and the piñata bank offer better rates by design to incentivise larger transactions.</p>
         </div>
       </div>
 
@@ -1054,8 +1054,8 @@
           <thead><tr><th>Currency</th><th>Amount</th><th>Rationale</th></tr></thead>
           <tbody>
             <tr><td class="highlight">Tickets</td><td class="num">5</td><td>Enough for 5 levels (~20 min first session before energy gate)</td></tr>
-            <tr><td class="highlight">Coins</td><td class="num">25,000</td><td>Can buy several power-ups to experience them; runs out by level ~15</td></tr>
-            <tr><td class="highlight">Gems</td><td class="num">5</td><td>Taste of premium currency; not enough to buy anything meaningful alone</td></tr>
+            <tr><td class="highlight">Coins</td><td class="num">20,000</td><td>Can buy several power-ups to experience them; runs out by level ~15</td></tr>
+            <tr><td class="highlight">Gems</td><td class="num">10</td><td>Taste of premium currency; enough to buy one cheap power-up with gems</td></tr>
           </tbody>
         </table>
         <div class="callout turq" style="margin-top: 12px;">
@@ -1077,7 +1077,8 @@
         <table class="data-table">
           <thead><tr><th>Source</th><th>Amount</th><th>Limit</th></tr></thead>
           <tbody>
-            <tr><td>Time regeneration</td><td class="num">1 per 2hr</td><td>Cap 5</td></tr>
+            <tr><td>Time regeneration (offline)</td><td class="num">1 per 2hr</td><td>Cap 5</td></tr>
+            <tr><td>Time regeneration (active play)</td><td class="num">1 per 2hr</td><td>Uncapped</td></tr>
             <tr><td>Watch ad (FreeTicket)</td><td class="num">1</td><td>3x per day</td></tr>
             <tr><td>Gem purchase (1 ticket)</td><td class="num">1</td><td>10 gems</td></tr>
             <tr><td>Gem purchase (5 tickets)</td><td class="num">5</td><td>45 gems</td></tr>
@@ -1087,7 +1088,7 @@
         </table>
         <div class="callout" style="margin-top: 12px;">
           <strong>F2P Analysis:</strong>
-          <p>5-8 tickets/day (5 regen + up to 3 ads) = 5-8 levels = ~30-60 min gameplay. Creates natural session breaks and return-visit motivation without being overly punishing.</p>
+          <p>~10 tickets/day (5 offline regen + 5 active regen + up to 3 ads) = 10-13 levels = ~45-75 min gameplay. Creates natural session breaks and return-visit motivation without being overly punishing.</p>
         </div>
       </div>
 
@@ -1116,14 +1117,14 @@
         <table class="data-table">
           <thead><tr><th>Sink</th><th>Cost</th><th>Frequency</th></tr></thead>
           <tbody>
-            <tr><td>Extra Spin (El Corazon)</td><td class="num">500</td><td>During gameplay</td></tr>
+            <tr><td>Extra Spin (El Corazon)</td><td class="num">5,000 (escalating)</td><td>During gameplay</td></tr>
             <tr><td>Reveal (La Estrella)</td><td class="num">1,000</td><td>During gameplay</td></tr>
             <tr><td>Column Wild (El Comodin)</td><td class="num">1,500</td><td>During gameplay</td></tr>
             <tr><td>Remove Blocker (El Valiente)</td><td class="num">2,000</td><td>During gameplay</td></tr>
             <tr><td>Board Wild (El Sol Dorado)</td><td class="num">2,500</td><td>During gameplay</td></tr>
             <tr><td>Multiplier (La Corona)</td><td class="num">2,500</td><td>During gameplay</td></tr>
             <tr><td>Row Clear (La Muerte)</td><td class="num">4,000</td><td>During gameplay</td></tr>
-            <tr><td>Extra spins (escalating)</td><td class="num">1,000-10,000</td><td>During gameplay</td></tr>
+            <tr><td>Extra spins (escalating)</td><td class="num">5,000-15,000</td><td>During gameplay</td></tr>
           </tbody>
         </table>
 
@@ -1191,10 +1192,10 @@
         <table class="data-table">
           <thead><tr><th>Purchase #</th><th>Coins</th><th>Gems</th><th>Design Rationale</th></tr></thead>
           <tbody>
-            <tr><td class="highlight">1st</td><td class="num">1,000</td><td class="num">10</td><td>Affordable — "just one more"</td></tr>
-            <tr><td class="highlight">2nd</td><td class="num">2,500</td><td class="num">25</td><td>Noticeable cost, still reasonable</td></tr>
-            <tr><td class="highlight">3rd</td><td class="num">5,000</td><td class="num">50</td><td>Expensive — approaches level reward value</td></tr>
-            <tr><td class="highlight">4th+</td><td class="num">10,000</td><td class="num">100</td><td>Deliberately punishing — designed to be a bad deal</td></tr>
+            <tr><td class="highlight">1st</td><td class="num">5,000</td><td class="num">50</td><td>Noticeable cost — "just one more" requires real commitment</td></tr>
+            <tr><td class="highlight">2nd</td><td class="num">7,500</td><td class="num">75</td><td>Expensive — approaches level reward value</td></tr>
+            <tr><td class="highlight">3rd</td><td class="num">10,000</td><td class="num">100</td><td>Deliberately punishing — exceeds most level rewards</td></tr>
+            <tr><td class="highlight">4th+</td><td class="num">15,000</td><td class="num">150</td><td>Extreme — designed to be a terrible deal</td></tr>
           </tbody>
         </table>
         <div class="callout orange" style="margin-top: 12px;">
@@ -1396,10 +1397,10 @@
           <tbody>
             <tr><td class="highlight">Tutorial</td><td>1-5</td><td>5x5</td><td class="num">15</td><td class="num">5.0%</td><td class="num">1.5%</td><td class="num">2.0%</td><td class="num">0.0%</td><td class="num" style="color:var(--success)">8.5%</td><td class="num">0</td><td class="num">0</td></tr>
             <tr><td class="highlight">Easy</td><td>6-15</td><td>5x5</td><td class="num">12</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">0.0%</td><td class="num" style="color:var(--success)">7.0%</td><td class="num">0</td><td class="num">0</td></tr>
-            <tr><td class="highlight">Medium</td><td>16-30</td><td>5x5</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">2.0%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">1-3</td><td class="num">0</td></tr>
-            <tr><td class="highlight">Hard</td><td>31-50</td><td>5x5</td><td class="num">10</td><td class="num">4.5%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">3.0%</td><td class="num" style="color:var(--success)">7.5%</td><td class="num">2-4</td><td class="num">1-2</td></tr>
-            <tr><td class="highlight">Very Hard</td><td>51-70</td><td>6x6</td><td class="num">12</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">3.5%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">3-5</td><td class="num">2-3</td></tr>
-            <tr><td class="highlight">Expert</td><td>71+</td><td>6x6</td><td class="num">12</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">4.0%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">4-6</td><td class="num">2-4</td></tr>
+            <tr><td class="highlight">Medium</td><td>16-30</td><td>5x5</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">2.5%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">1-3</td><td class="num">0</td></tr>
+            <tr><td class="highlight">Hard</td><td>31-50</td><td>5x5</td><td class="num">10</td><td class="num">4.5%</td><td class="num">1.0%</td><td class="num">2.0%</td><td class="num">3.3%</td><td class="num" style="color:var(--success)">7.5%</td><td class="num">2-4</td><td class="num">1-2</td></tr>
+            <tr><td class="highlight">Very Hard</td><td>51-70</td><td>6x6</td><td class="num">11</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">3.5%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">3-5</td><td class="num">2-3</td></tr>
+            <tr><td class="highlight">Expert</td><td>71+</td><td>6x6</td><td class="num">10</td><td class="num">4.0%</td><td class="num">1.0%</td><td class="num">1.5%</td><td class="num">4.8%</td><td class="num" style="color:var(--success)">6.5%</td><td class="num">4-6</td><td class="num">2-4</td></tr>
           </tbody>
         </table>
 
@@ -1798,7 +1799,7 @@
           </div>
           <div class="timeline-item turq">
             <div class="timeline-time">InitializeNewPlayer CloudScript</div>
-            <div class="timeline-title">Grant starting balance: 5 tickets, 25,000 coins, 5 gems</div>
+            <div class="timeline-title">Grant starting balance: 5 tickets, 20,000 coins, 10 gems</div>
             <div class="timeline-desc">World Map (El Mercado) loads with Level 1 highlighted. "Welcome! Tap to play your first game." Auto-enter Level 1 — no need to find the play button.</div>
           </div>
           <div class="timeline-item gold">
@@ -1901,7 +1902,7 @@
         <table class="data-table">
           <thead><tr><th>Level</th><th>TK Spent</th><th>Coins Earned</th><th>Coins Spent</th><th>Running Total</th></tr></thead>
           <tbody>
-            <tr><td class="highlight">Start</td><td>—</td><td>—</td><td>—</td><td>5 TK, 25,000 CN, 5 GM</td></tr>
+            <tr><td class="highlight">Start</td><td>—</td><td>—</td><td>—</td><td>5 TK, 20,000 CN, 10 GM</td></tr>
             <tr><td class="highlight">1</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 31,500 CN</td></tr>
             <tr><td class="highlight">2</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 38,000 CN</td></tr>
             <tr><td class="highlight">3</td><td class="num">0 (free)</td><td class="num">6,500</td><td class="num">0</td><td>5 TK, 44,500 CN</td></tr>
@@ -3535,12 +3536,12 @@
           <input type="range" id="esStartTickets" min="1" max="20" value="5" oninput="document.getElementById('esStartTicketsVal').textContent=this.value">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Coins</label><span class="es-val" id="esStartCoinsVal">25,000</span></div>
-          <input type="range" id="esStartCoins" min="0" max="100000" step="5000" value="25000" oninput="document.getElementById('esStartCoinsVal').textContent=Number(this.value).toLocaleString()">
+          <div class="es-param-header"><label>Coins</label><span class="es-val" id="esStartCoinsVal">20,000</span></div>
+          <input type="range" id="esStartCoins" min="0" max="100000" step="5000" value="20000" oninput="document.getElementById('esStartCoinsVal').textContent=Number(this.value).toLocaleString()">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Gems</label><span class="es-val" id="esStartGemsVal">5</span></div>
-          <input type="range" id="esStartGems" min="0" max="100" value="5" oninput="document.getElementById('esStartGemsVal').textContent=this.value">
+          <div class="es-param-header"><label>Gems</label><span class="es-val" id="esStartGemsVal">10</span></div>
+          <input type="range" id="esStartGems" min="0" max="100" value="10" oninput="document.getElementById('esStartGemsVal').textContent=this.value">
         </div>
       </div>
 
@@ -3555,8 +3556,8 @@
           <input type="range" id="esMaxTickets" min="3" max="10" value="5" oninput="document.getElementById('esMaxTicketsVal').textContent=this.value">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Play Hours / Day</label><span class="es-val" id="esPlayHoursVal">10</span></div>
-          <input type="range" id="esPlayHours" min="4" max="16" value="10" oninput="document.getElementById('esPlayHoursVal').textContent=this.value">
+          <div class="es-param-header"><label>Play Hours / Day</label><span class="es-val" id="esPlayHoursVal">4</span></div>
+          <input type="range" id="esPlayHours" min="4" max="16" value="4" oninput="document.getElementById('esPlayHoursVal').textContent=this.value">
         </div>
       </div>
 
@@ -3571,40 +3572,40 @@
           <input type="range" id="esFailEasy" min="0" max="50" value="10" oninput="document.getElementById('esFailEasyVal').textContent=this.value+'%'">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Medium Fail %</label><span class="es-val" id="esFailMedVal">20%</span></div>
-          <input type="range" id="esFailMed" min="0" max="60" value="20" oninput="document.getElementById('esFailMedVal').textContent=this.value+'%'">
+          <div class="es-param-header"><label>Medium Fail %</label><span class="es-val" id="esFailMedVal">25%</span></div>
+          <input type="range" id="esFailMed" min="0" max="60" value="25" oninput="document.getElementById('esFailMedVal').textContent=this.value+'%'">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Hard Fail %</label><span class="es-val" id="esFailHardVal">30%</span></div>
-          <input type="range" id="esFailHard" min="0" max="70" value="30" oninput="document.getElementById('esFailHardVal').textContent=this.value+'%'">
+          <div class="es-param-header"><label>Hard Fail %</label><span class="es-val" id="esFailHardVal">33%</span></div>
+          <input type="range" id="esFailHard" min="0" max="70" value="33" oninput="document.getElementById('esFailHardVal').textContent=this.value+'%'">
         </div>
         <div class="es-param">
           <div class="es-param-header"><label>Very Hard Fail %</label><span class="es-val" id="esFailVHVal">40%</span></div>
           <input type="range" id="esFailVH" min="0" max="80" value="40" oninput="document.getElementById('esFailVHVal').textContent=this.value+'%'">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Expert Fail %</label><span class="es-val" id="esFailExpVal">50%</span></div>
-          <input type="range" id="esFailExp" min="0" max="90" value="50" oninput="document.getElementById('esFailExpVal').textContent=this.value+'%'">
+          <div class="es-param-header"><label>Expert Fail %</label><span class="es-val" id="esFailExpVal">48%</span></div>
+          <input type="range" id="esFailExp" min="0" max="90" value="48" oninput="document.getElementById('esFailExpVal').textContent=this.value+'%'">
         </div>
       </div>
 
       <div class="es-section">
         <div class="es-section-title">Spending Behavior</div>
         <div class="es-param">
-          <div class="es-param-header"><label>Power-ups / Level</label><span class="es-val" id="esPowerupsVal">1.0</span></div>
-          <input type="range" id="esPowerups" min="0" max="3" step="0.1" value="1" oninput="document.getElementById('esPowerupsVal').textContent=Number(this.value).toFixed(1)">
+          <div class="es-param-header"><label>Power-ups / Level</label><span class="es-val" id="esPowerupsVal">1.7</span></div>
+          <input type="range" id="esPowerups" min="0" max="3" step="0.1" value="1.7" oninput="document.getElementById('esPowerupsVal').textContent=Number(this.value).toFixed(1)">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Avg Power-up Cost</label><span class="es-val" id="esPowerupCostVal">1,750</span></div>
-          <input type="range" id="esPowerupCost" min="500" max="4000" step="250" value="1750" oninput="document.getElementById('esPowerupCostVal').textContent=Number(this.value).toLocaleString()">
+          <div class="es-param-header"><label>Avg Power-up Cost</label><span class="es-val" id="esPowerupCostVal">2,000</span></div>
+          <input type="range" id="esPowerupCost" min="500" max="4000" step="250" value="2000" oninput="document.getElementById('esPowerupCostVal').textContent=Number(this.value).toLocaleString()">
         </div>
         <div class="es-param">
           <div class="es-param-header"><label>Extra Spins / Level</label><span class="es-val" id="esExtraSpinsVal">0.5</span></div>
           <input type="range" id="esExtraSpins" min="0" max="2" step="0.1" value="0.5" oninput="document.getElementById('esExtraSpinsVal').textContent=Number(this.value).toFixed(1)">
         </div>
         <div class="es-param">
-          <div class="es-param-header"><label>Avg Extra Spin Cost</label><span class="es-val" id="esExtraSpinCostVal">1,500</span></div>
-          <input type="range" id="esExtraSpinCost" min="1000" max="10000" step="500" value="1500" oninput="document.getElementById('esExtraSpinCostVal').textContent=Number(this.value).toLocaleString()">
+          <div class="es-param-header"><label>Avg Extra Spin Cost</label><span class="es-val" id="esExtraSpinCostVal">5,000</span></div>
+          <input type="range" id="esExtraSpinCost" min="1000" max="15000" step="500" value="5000" oninput="document.getElementById('esExtraSpinCostVal').textContent=Number(this.value).toLocaleString()">
         </div>
       </div>
 
@@ -4307,11 +4308,11 @@ const ES_PIGGY_TIERS = [
 ];
 
 const ES_PRESETS = {
-  f2p: { login:true, ads:false, iap:false, piggy:true, leaderboard:false, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:10, failTut:0, failEasy:10, failMed:20, failHard:30, failVH:40, failExp:50, powerups:1, powerupCost:1750, extraSpins:0.5, extraSpinCost:1500, adTickets:0, adCoins:0, adDouble:0, iapSpend:0, starterBundle:false, failRewardPct:25 },
-  f2p_ads: { login:true, ads:true, iap:false, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:10, failTut:0, failEasy:10, failMed:20, failHard:30, failVH:40, failExp:50, powerups:1, powerupCost:1750, extraSpins:0.5, extraSpinCost:1500, adTickets:1.5, adCoins:3, adDouble:1, iapSpend:0, starterBundle:false, failRewardPct:25 },
-  minnow: { login:true, ads:true, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:10, failTut:0, failEasy:10, failMed:20, failHard:30, failVH:40, failExp:50, powerups:1.2, powerupCost:1750, extraSpins:0.6, extraSpinCost:1500, adTickets:2, adCoins:5, adDouble:2, iapSpend:8, starterBundle:true, failRewardPct:25 },
-  dolphin: { login:true, ads:true, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:12, failTut:0, failEasy:5, failMed:15, failHard:25, failVH:35, failExp:45, powerups:1.5, powerupCost:2000, extraSpins:0.8, extraSpinCost:2000, adTickets:2.5, adCoins:5, adDouble:3, iapSpend:30, starterBundle:true, failRewardPct:25 },
-  whale: { login:true, ads:false, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:25000, startGems:5, regenHours:2, maxTickets:5, playHours:14, failTut:0, failEasy:5, failMed:10, failHard:20, failVH:30, failExp:40, powerups:2, powerupCost:2500, extraSpins:1, extraSpinCost:3000, adTickets:0, adCoins:0, adDouble:0, iapSpend:100, starterBundle:true, failRewardPct:25 },
+  f2p: { login:true, ads:false, iap:false, piggy:true, leaderboard:false, failReward:false, startTickets:5, startCoins:20000, startGems:10, regenHours:2, maxTickets:5, playHours:4, failTut:0, failEasy:10, failMed:25, failHard:33, failVH:40, failExp:48, powerups:1.7, powerupCost:2000, extraSpins:0.5, extraSpinCost:5000, adTickets:0, adCoins:0, adDouble:0, iapSpend:0, starterBundle:false, failRewardPct:25 },
+  f2p_ads: { login:true, ads:true, iap:false, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:20000, startGems:10, regenHours:2, maxTickets:5, playHours:4, failTut:0, failEasy:10, failMed:25, failHard:33, failVH:40, failExp:48, powerups:1.7, powerupCost:2000, extraSpins:0.5, extraSpinCost:5000, adTickets:1.5, adCoins:3, adDouble:1, iapSpend:0, starterBundle:false, failRewardPct:25 },
+  minnow: { login:true, ads:true, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:20000, startGems:10, regenHours:2, maxTickets:5, playHours:4, failTut:0, failEasy:10, failMed:25, failHard:33, failVH:40, failExp:48, powerups:1.9, powerupCost:2000, extraSpins:0.6, extraSpinCost:5000, adTickets:2, adCoins:5, adDouble:2, iapSpend:8, starterBundle:true, failRewardPct:25 },
+  dolphin: { login:true, ads:true, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:20000, startGems:10, regenHours:2, maxTickets:5, playHours:6, failTut:0, failEasy:5, failMed:18, failHard:25, failVH:35, failExp:43, powerups:2.2, powerupCost:2250, extraSpins:0.8, extraSpinCost:5000, adTickets:2.5, adCoins:5, adDouble:3, iapSpend:30, starterBundle:true, failRewardPct:25 },
+  whale: { login:true, ads:false, iap:true, piggy:true, leaderboard:true, failReward:false, startTickets:5, startCoins:20000, startGems:10, regenHours:2, maxTickets:5, playHours:8, failTut:0, failEasy:5, failMed:13, failHard:20, failVH:30, failExp:38, powerups:2.5, powerupCost:2500, extraSpins:1, extraSpinCost:5000, adTickets:0, adCoins:0, adDouble:0, iapSpend:100, starterBundle:true, failRewardPct:25 },
 };
 
 function esApplyPreset(name, btn) {
@@ -4431,10 +4432,12 @@ function esRunSim() {
     let dayLevelsCompleted = 0, dayLevelsFailed = 0, dayTicketsUsed = 0;
 
     // --- Ticket regeneration ---
-    // Overnight: tickets regen up to maxTickets cap while player is away.
-    // During active play: player uses tickets as they play, so regen slots
+    // Offline: tickets regen during non-play hours, capped at maxTickets.
+    const offlineHours = 24 - p.playHours;
+    const offlineRegen = Math.floor(offlineHours / p.regenHours);
+    tickets = Math.min(tickets + offlineRegen, p.maxTickets);
+    // Active play: player uses tickets as they play, so regen slots
     // are consumed and refilled continuously — cap doesn't limit active regen.
-    tickets = Math.min(tickets, p.maxTickets); // overnight cap
     const activeRegen = Math.floor(p.playHours / p.regenHours);
     tickets += activeRegen;
 
@@ -4835,10 +4838,10 @@ function esGeneratePrompt(r, findingsHtml) {
   // Baseline defaults (match HTML slider default values)
   const baseline = {
     login: true, ads: false, iap: false, piggy: true, leaderboard: false, failReward: false, starterBundle: false,
-    startTickets: 5, startCoins: 25000, startGems: 5,
-    regenHours: 2, maxTickets: 5, playHours: 10,
-    'failRates.Tutorial': 0, 'failRates.Easy': 0.10, 'failRates.Medium': 0.20, 'failRates.Hard': 0.30, 'failRates.Very Hard': 0.40, 'failRates.Expert': 0.50,
-    powerupsPerLevel: 1, powerupCost: 1750, extraSpinsPerLevel: 0.5, extraSpinCost: 1500,
+    startTickets: 5, startCoins: 20000, startGems: 10,
+    regenHours: 2, maxTickets: 5, playHours: 4,
+    'failRates.Tutorial': 0, 'failRates.Easy': 0.10, 'failRates.Medium': 0.25, 'failRates.Hard': 0.33, 'failRates.Very Hard': 0.40, 'failRates.Expert': 0.48,
+    powerupsPerLevel: 1.7, powerupCost: 2000, extraSpinsPerLevel: 0.5, extraSpinCost: 5000,
     adTicketsPerDay: 1.5, adCoinsPerDay: 3, adDoublePerDay: 1,
     iapMonthlySpend: 0, failRewardPct: 0.25
   };
