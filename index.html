@@ -2972,7 +2972,7 @@
 
           <!-- Club de Lotería (VIP Subscription) -->
           <div class="wireframe" style="max-width:340px;">
-            <div class="wireframe-screen" style="min-height:420px; padding:0; justify-content:flex-start;">
+            <div class="wireframe-screen" style="min-height:420px; padding:0; justify-content:flex-start; display:flex; flex-direction:column;">
               <!-- Header with golden glow -->
               <div style="width:100%; background:linear-gradient(180deg, rgba(255,179,0,0.2) 0%, transparent 100%); padding:14px 16px 8px; text-align:center;">
                 <div style="font-size:9px; color:#888; text-align:left;">&#8592; Back</div>
@@ -2981,34 +2981,25 @@
                 <div style="font-size:9px; color:#aaa; margin-top:2px;">Exclusive VIP Membership</div>
               </div>
 
-              <!-- Price banner -->
-              <div style="width:88%; background:linear-gradient(135deg, #4A148C, #7B1FA2); border-radius:10px; padding:10px 14px; margin:6px 0; display:flex; align-items:center; justify-content:space-between;">
-                <div>
-                  <div style="font-size:12px; color:#fff; font-weight:800;">$6.99<span style="font-size:8px; font-weight:400; color:#ccc;">/month</span></div>
-                  <div style="font-size:7px; color:var(--gold);">Cancel anytime</div>
-                </div>
-                <div style="background:var(--gold); color:#1A1A2E; border-radius:6px; padding:6px 14px; font-size:10px; font-weight:800;">JOIN NOW</div>
-              </div>
-
               <!-- Perks list -->
-              <div style="width:88%; display:flex; flex-direction:column; gap:5px; margin-top:4px;">
+              <div style="width:88%; display:flex; flex-direction:column; gap:5px; margin:8px auto 0; flex:1;">
                 <!-- Perk: Ticket cap -->
                 <div style="display:flex; align-items:center; gap:8px; background:rgba(255,179,0,0.06); border:1px solid rgba(255,179,0,0.2); border-radius:8px; padding:7px 10px;">
                   <span style="font-size:16px;">&#127915;</span>
                   <div style="flex:1;">
-                    <div style="font-size:9px; color:#fff; font-weight:700;">8 Ticket Cap</div>
-                    <div style="font-size:7px; color:#888;">Up from 5 &mdash; 60% more daily plays</div>
+                    <div style="font-size:9px; color:#fff; font-weight:700;">10 Ticket Cap</div>
+                    <div style="font-size:7px; color:#888;">Up from 5 &mdash; double your daily plays</div>
                   </div>
-                  <div style="font-size:9px; color:var(--gold); font-weight:700;">+60%</div>
+                  <div style="font-size:9px; color:var(--gold); font-weight:700;">2x</div>
                 </div>
-                <!-- Perk: Faster regen -->
+                <!-- Perk: 2x regen -->
                 <div style="display:flex; align-items:center; gap:8px; background:rgba(0,188,212,0.06); border:1px solid rgba(0,188,212,0.2); border-radius:8px; padding:7px 10px;">
                   <span style="font-size:16px;">&#9201;</span>
                   <div style="flex:1;">
-                    <div style="font-size:9px; color:#fff; font-weight:700;">Faster Regen</div>
-                    <div style="font-size:7px; color:#888;">1 ticket every 1.5h (was 2h)</div>
+                    <div style="font-size:9px; color:#fff; font-weight:700;">2x Ticket Regen</div>
+                    <div style="font-size:7px; color:#888;">1 ticket every 1h (was 2h)</div>
                   </div>
-                  <div style="font-size:9px; color:var(--turquoise); font-weight:700;">1.5h</div>
+                  <div style="font-size:9px; color:var(--turquoise); font-weight:700;">1h</div>
                 </div>
                 <!-- Perk: Free extra spin -->
                 <div style="display:flex; align-items:center; gap:8px; background:rgba(233,30,99,0.06); border:1px solid rgba(233,30,99,0.2); border-radius:8px; padding:7px 10px;">
@@ -3028,23 +3019,23 @@
                   </div>
                   <div style="font-size:9px; color:var(--gold); font-weight:700;">+2K</div>
                 </div>
+                <!-- Perk: Daily gems -->
+                <div style="display:flex; align-items:center; gap:8px; background:rgba(123,31,162,0.06); border:1px solid rgba(123,31,162,0.2); border-radius:8px; padding:7px 10px;">
+                  <span style="font-size:16px;">&#128142;</span>
+                  <div style="flex:1;">
+                    <div style="font-size:9px; color:#fff; font-weight:700;">3 Daily Gems</div>
+                    <div style="font-size:7px; color:#888;">Premium currency every day</div>
+                  </div>
+                  <div style="font-size:9px; color:var(--purple); font-weight:700;">+3</div>
+                </div>
                 <!-- Perk: Piñata boost -->
                 <div style="display:flex; align-items:center; gap:8px; background:rgba(76,175,80,0.06); border:1px solid rgba(76,175,80,0.2); border-radius:8px; padding:7px 10px;">
                   <span style="font-size:16px;">&#127882;</span>
                   <div style="flex:1;">
-                    <div style="font-size:9px; color:#fff; font-weight:700;">Piñata Bank +15%</div>
-                    <div style="font-size:7px; color:#888;">Fill rate boosted from 10% to 15%</div>
+                    <div style="font-size:9px; color:#fff; font-weight:700;">Piñata Bank Fills Faster</div>
+                    <div style="font-size:7px; color:#888;">15% fill rate (was 10%) &mdash; break it sooner</div>
                   </div>
                   <div style="font-size:9px; color:var(--success); font-weight:700;">+15%</div>
-                </div>
-                <!-- Perk: Cosmetics -->
-                <div style="display:flex; align-items:center; gap:8px; background:rgba(123,31,162,0.06); border:1px solid rgba(123,31,162,0.2); border-radius:8px; padding:7px 10px;">
-                  <span style="font-size:16px;">&#10024;</span>
-                  <div style="flex:1;">
-                    <div style="font-size:9px; color:#fff; font-weight:700;">Gold Frame + Card Backs</div>
-                    <div style="font-size:7px; color:#888;">Exclusive monthly rotating designs</div>
-                  </div>
-                  <div style="font-size:9px; color:var(--purple); font-weight:700;">VIP</div>
                 </div>
                 <!-- Perk: Ad-free -->
                 <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:7px 10px;">
@@ -3057,15 +3048,21 @@
                 </div>
               </div>
 
-              <!-- Leaderboard bonus note -->
-              <div style="width:88%; text-align:center; margin-top:6px; padding:6px; background:rgba(255,179,0,0.05); border-radius:6px;">
-                <div style="font-size:8px; color:var(--gold);">&#127942; 1.5x Leaderboard Rewards</div>
+              <!-- Join button at bottom -->
+              <div style="width:88%; margin:10px auto 14px;">
+                <div style="background:linear-gradient(135deg, #4A148C, #7B1FA2); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
+                  <div>
+                    <div style="font-size:12px; color:#fff; font-weight:800;">$6.99<span style="font-size:8px; font-weight:400; color:#ccc;">/month</span></div>
+                    <div style="font-size:7px; color:var(--gold);">Cancel anytime</div>
+                  </div>
+                  <div style="background:var(--gold); color:#1A1A2E; border-radius:6px; padding:8px 18px; font-size:11px; font-weight:800;">JOIN NOW</div>
+                </div>
               </div>
             </div>
             <div class="wireframe-label">
               <div class="wf-time">Monetisation</div>
               <h4>Club de Lotería &mdash; VIP Subscription</h4>
-              <p>$6.99/month VIP club. No content gating &mdash; same levels, same cards. VIP plays more (8 ticket cap, 1.5h regen), loses less (free extra spin per level), and earns faster (daily coins, piñata boost, 1.5x leaderboard). Gold frame + monthly rotating card backs for collection drive.</p>
+              <p>$6.99/month VIP club. No content gating &mdash; same levels, same cards. VIP plays more (10 ticket cap, 2x regen), loses less (free extra spin per level), and earns faster (daily coins + gems, piñata boost). Ad-free with rewarded ads still available.</p>
             </div>
           </div>
 
