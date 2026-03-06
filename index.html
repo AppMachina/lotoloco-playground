@@ -4130,44 +4130,15 @@ const ES_PRESETS = {
 
 function esApplyPreset(name, btn) {
   const p = ES_PRESETS[name];
+  // Only update revenue toggles — leave all sliders at their current values
   document.getElementById('esToggleLogin').checked = p.login;
   document.getElementById('esToggleAds').checked = p.ads;
   document.getElementById('esToggleIAP').checked = p.iap;
   document.getElementById('esTogglePiggy').checked = p.piggy;
   document.getElementById('esToggleLeaderboard').checked = p.leaderboard;
   document.getElementById('esToggleFailReward').checked = p.failReward;
-  document.getElementById('esStartTickets').value = p.startTickets;
-  document.getElementById('esStartTicketsVal').textContent = p.startTickets;
-  document.getElementById('esStartCoins').value = p.startCoins;
-  document.getElementById('esStartCoinsVal').textContent = p.startCoins.toLocaleString();
-  document.getElementById('esStartGems').value = p.startGems;
-  document.getElementById('esStartGemsVal').textContent = p.startGems;
-  document.getElementById('esRegenHours').value = p.regenHours;
-  document.getElementById('esRegenHoursVal').textContent = p.regenHours;
-  document.getElementById('esMaxTickets').value = p.maxTickets;
-  document.getElementById('esMaxTicketsVal').textContent = p.maxTickets;
-  document.getElementById('esPlayHours').value = p.playHours;
-  document.getElementById('esPlayHoursVal').textContent = p.playHours;
-  document.getElementById('esFailTut').value = p.failTut;
-  document.getElementById('esFailTutVal').textContent = p.failTut + '%';
-  document.getElementById('esFailEasy').value = p.failEasy;
-  document.getElementById('esFailEasyVal').textContent = p.failEasy + '%';
-  document.getElementById('esFailMed').value = p.failMed;
-  document.getElementById('esFailMedVal').textContent = p.failMed + '%';
-  document.getElementById('esFailHard').value = p.failHard;
-  document.getElementById('esFailHardVal').textContent = p.failHard + '%';
-  document.getElementById('esFailVH').value = p.failVH;
-  document.getElementById('esFailVHVal').textContent = p.failVH + '%';
-  document.getElementById('esFailExp').value = p.failExp;
-  document.getElementById('esFailExpVal').textContent = p.failExp + '%';
-  document.getElementById('esPowerups').value = p.powerups;
-  document.getElementById('esPowerupsVal').textContent = p.powerups.toFixed(1);
-  document.getElementById('esPowerupCost').value = p.powerupCost;
-  document.getElementById('esPowerupCostVal').textContent = p.powerupCost.toLocaleString();
-  document.getElementById('esExtraSpins').value = p.extraSpins;
-  document.getElementById('esExtraSpinsVal').textContent = p.extraSpins.toFixed(1);
-  document.getElementById('esExtraSpinCost').value = p.extraSpinCost;
-  document.getElementById('esExtraSpinCostVal').textContent = p.extraSpinCost.toLocaleString();
+  document.getElementById('esStarterBundle').checked = p.starterBundle;
+  // Update ad and IAP values to match profile revenue level
   document.getElementById('esAdTickets').value = p.adTickets;
   document.getElementById('esAdTicketsVal').textContent = p.adTickets.toFixed(1);
   document.getElementById('esAdCoins').value = p.adCoins;
@@ -4176,9 +4147,6 @@ function esApplyPreset(name, btn) {
   document.getElementById('esAdDoubleVal').textContent = p.adDouble;
   document.getElementById('esIAPSpend').value = p.iapSpend;
   document.getElementById('esIAPSpendVal').textContent = '$' + p.iapSpend;
-  document.getElementById('esStarterBundle').checked = p.starterBundle;
-  document.getElementById('esFailRewardPct').value = p.failRewardPct;
-  document.getElementById('esFailRewardPctVal').textContent = p.failRewardPct + '%';
   document.querySelectorAll('.es-preset').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   esRunSim();
@@ -4513,6 +4481,12 @@ function esRenderResults(r) {
       </div>
     </div>
 
+    <!-- Daily coin flow chart -->
+    <div class="es-card green">
+      <h3>Daily Coin Flow (In vs Out)</h3>
+      <div class="es-chart-wrap"><canvas id="esCoinFlowChart"></canvas></div>
+    </div>
+
     <!-- Coin chart -->
     <div class="es-card">
       <h3>Coin Balance Over Time</h3>
@@ -4529,12 +4503,6 @@ function esRenderResults(r) {
     <div class="es-card gold">
       <h3>Level Progression</h3>
       <div class="es-chart-wrap"><canvas id="esLevelChart"></canvas></div>
-    </div>
-
-    <!-- Daily coin flow chart -->
-    <div class="es-card green">
-      <h3>Daily Coin Flow (In vs Out)</h3>
-      <div class="es-chart-wrap"><canvas id="esCoinFlowChart"></canvas></div>
     </div>
 
     <!-- World milestones -->
@@ -4682,13 +4650,6 @@ function esGeneratePrompt(r, findingsHtml) {
   }
 
   const prompt = `Update the LotoLoco economy based on the following simulation results.
-
-## Player Profile: ${archetype}
-- Play hours/day: ${p.playHours}
-- Ticket regen: 1 every ${p.regenHours}h, max ${p.maxTickets}
-- Revenue sources: ${[p.login ? 'Daily Login' : '', p.ads ? 'Ads' : '', p.iap ? 'IAP ($' + p.iapMonthlySpend + '/mo)' : '', p.piggy ? 'Piñata Bank' : '', p.leaderboard ? 'Leaderboards' : ''].filter(Boolean).join(', ') || 'None'}
-- Power-ups/level: ${p.powerupsPerLevel} (avg cost ${fmt(p.powerupCost)} coins)
-- Extra spins/level: ${p.extraSpinsPerLevel} (avg cost ${fmt(p.extraSpinCost)} coins)
 
 ## Simulation Results (90-day)
 - Days to complete 150 levels: ${r.completionDay > 0 ? r.completionDay : '90+'}
