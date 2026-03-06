@@ -651,7 +651,7 @@
           <li><strong>Core Features</strong> tab: gameplay loop, special symbols, board mechanics, worlds, difficulty, currencies, power-ups, engagement, technical overview</li>
           <li><strong>Economy &amp; Store</strong> tab: currency system, coin/gem economy, gem packs, bundles, piñata bank, economy health indicators</li>
           <li><strong>Level Design</strong> tab: world progression, difficulty configuration, star thresholds, board generation</li>
-          <li><strong>Engagement Systems</strong> tab: daily login, piñata bank, leaderboards, season pass, rewarded ads, daily deals</li>
+          <li><strong>Engagement Systems</strong> tab: daily login, piñata bank, leaderboards, rewarded ads, daily deals</li>
           <li><strong>FTUE &amp; Onboarding</strong> tab: first session flow, tutorial progression, monetisation timeline, economy drip</li>
           <li><strong>Technical Architecture</strong> tab: server model, 35 CloudScript handlers, data model, anti-cheat</li>
           <li><strong>Play the Game</strong> tab: interactive Loter&iacute;a board simulator with reels, scoring, and LOCO detection</li>
@@ -930,11 +930,6 @@
             <h3>Leaderboards</h3>
             <p>Weekly "La Semana" and monthly "El Mes" leaderboards tracking stars earned. Top players win coins, gems, tickets, and exclusive frames/titles.</p>
           </div>
-          <div class="feature-card purple">
-            <div class="fc-icon">&#127915;</div>
-            <h3>Season Pass</h3>
-            <p>50 levels per 6-week season, themed around Mexican holidays. Free and premium ($4.99/$9.99) tracks. Daily/weekly challenges earn XP toward pass rewards.</p>
-          </div>
           <div class="feature-card orange">
             <div class="fc-icon">&#127916;</div>
             <h3>Rewarded Ads</h3>
@@ -1158,7 +1153,6 @@
             <tr><td>Daily login (Day 7)</td><td class="num">15</td><td>Weekly cycle</td></tr>
             <tr><td>Weekly leaderboard (Top 100)</td><td class="num">5-100</td><td>Weekly</td></tr>
             <tr><td>Monthly leaderboard (Top 100)</td><td class="num">10-500</td><td>Monthly</td></tr>
-            <tr><td>Season Pass (free track)</td><td class="num">~50 per season</td><td>Per season</td></tr>
           </tbody>
         </table>
         <div class="callout" style="margin-top: 12px;">
@@ -1569,7 +1563,7 @@
 
       <div class="hero" style="padding: 24px 0 32px;">
         <h2 style="font-size: 36px;">ENGAGEMENT SYSTEMS</h2>
-        <div class="tagline">Daily loops, leaderboards, season pass, rewarded ads</div>
+        <div class="tagline">Daily loops, leaderboards, rewarded ads, daily deals</div>
       </div>
 
       <!-- Daily Login -->
@@ -1674,59 +1668,6 @@
             <tr><td class="highlight">4</td><td>Fiesta de Verano</td><td>May 13 - Sep 30</td><td>Summer fiesta, beach, tropical</td></tr>
             <tr><td class="highlight">5</td><td>Dia de los Muertos</td><td>Oct 1 - Nov 11</td><td>Altars, marigolds, sugar skulls</td></tr>
             <tr><td class="highlight">6</td><td>Las Posadas</td><td>Nov 12 - Dec 31</td><td>Nativity, pinatas, ponche</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Season Pass -->
-      <div class="section">
-        <div class="section-title">Season Pass (El Pase de Temporada)</div>
-        <div class="sub-title">Pass Types</div>
-        <table class="data-table">
-          <thead><tr><th>Pass Type</th><th>Cost</th><th>Benefits</th></tr></thead>
-          <tbody>
-            <tr><td class="highlight">Free Track</td><td>Free</td><td>Basic rewards every level</td></tr>
-            <tr><td class="highlight">Premium</td><td class="num">500 Gems (~$4.99)</td><td>All free rewards + premium rewards</td></tr>
-            <tr><td class="highlight">Premium+</td><td class="num">1,000 Gems (~$9.99)</td><td>Premium + 10 level skip + exclusive cosmetic</td></tr>
-          </tbody>
-        </table>
-
-        <div class="sub-title">XP Sources</div>
-        <table class="data-table">
-          <thead><tr><th>Action</th><th>XP Earned</th><th>Daily Limit</th></tr></thead>
-          <tbody>
-            <tr><td>Complete a level</td><td class="num">10 XP</td><td>None</td></tr>
-            <tr><td>Earn 3 stars on a level</td><td class="num">+5 bonus XP</td><td>None</td></tr>
-            <tr><td>First level of the day</td><td class="num">+20 bonus XP</td><td>1</td></tr>
-            <tr><td>Daily challenge complete</td><td class="num">50 XP</td><td>3 challenges</td></tr>
-            <tr><td>Weekly challenge complete</td><td class="num">200 XP</td><td>3 challenges</td></tr>
-            <tr><td>LOCO completion</td><td class="num">15 XP</td><td>None</td></tr>
-            <tr><td>Full board clear</td><td class="num">30 XP</td><td>None</td></tr>
-          </tbody>
-        </table>
-
-        <div class="sub-title">XP per Level Curve</div>
-        <div class="mini-stats">
-          <div class="mini-stat"><span class="ms-val">100 XP</span><span class="ms-label">Levels 1-25</span></div>
-          <div class="mini-stat"><span class="ms-val">150 XP</span><span class="ms-label">Levels 26-40</span></div>
-          <div class="mini-stat"><span class="ms-val">200 XP</span><span class="ms-label">Levels 41-50</span></div>
-          <div class="mini-stat"><span class="ms-val">~6,750</span><span class="ms-label">Total XP for completion</span></div>
-        </div>
-
-        <div class="sub-title">Sample Reward Track (Levels 1-10)</div>
-        <table class="data-table">
-          <thead><tr><th>Level</th><th>Free Reward</th><th>Premium Reward</th></tr></thead>
-          <tbody>
-            <tr><td class="highlight">1</td><td>500 Coins</td><td>+ 1 Extra Spin power-up</td></tr>
-            <tr><td class="highlight">2</td><td>1 Ticket</td><td>+ 5 Gems</td></tr>
-            <tr><td class="highlight">3</td><td>1,000 Coins</td><td>+ 2 Column Wild power-ups</td></tr>
-            <tr><td class="highlight">4</td><td>2 Tickets</td><td>+ 10 Gems</td></tr>
-            <tr><td class="highlight">5</td><td>2,500 Coins</td><td>+ Season Avatar Border</td></tr>
-            <tr><td class="highlight">6</td><td>1 Extra Spin</td><td>+ 15 Gems</td></tr>
-            <tr><td class="highlight">7</td><td>1,500 Coins</td><td>+ 3 Reveal power-ups</td></tr>
-            <tr><td class="highlight">8</td><td>2 Tickets</td><td>+ 20 Gems</td></tr>
-            <tr><td class="highlight">9</td><td>3,000 Coins</td><td>+ 1 Board Wild power-up</td></tr>
-            <tr><td class="highlight">10</td><td>Season Badge</td><td>+ Season Card Back (Exclusive)</td></tr>
           </tbody>
         </table>
       </div>
@@ -3121,7 +3062,7 @@
         <!-- Menu flow description -->
         <div class="callout turq" style="margin-top:8px;">
           <strong>Navigation Model</strong>
-          <p>Bottom tab bar is always visible on World Map. Four destinations: <strong>Home</strong> (world map, default), <strong>Tasks</strong> (daily/weekly challenges), <strong>Rank</strong> (leaderboards &amp; season pass), <strong>Shop</strong> (store with notification dot for new deals). During gameplay, the tab bar hides and is replaced by the power-up bar. All popups (daily login, level complete, offers) are modal overlays that dismiss on action.</p>
+          <p>Bottom tab bar is always visible on World Map. Four destinations: <strong>Home</strong> (world map, default), <strong>Tasks</strong> (daily/weekly challenges), <strong>Rank</strong> (leaderboards), <strong>Shop</strong> (store with notification dot for new deals). During gameplay, the tab bar hides and is replaced by the power-up bar. All popups (daily login, level complete, offers) are modal overlays that dismiss on action.</p>
         </div>
 
       </div>
@@ -3251,7 +3192,7 @@
           </tbody>
         </table>
 
-        <div class="sub-title">Challenges &amp; Season Pass (6)</div>
+        <div class="sub-title">Challenges (4)</div>
         <table class="data-table">
           <thead><tr><th>Handler</th><th>Purpose</th></tr></thead>
           <tbody>
@@ -3259,8 +3200,6 @@
             <tr><td class="highlight"><code>GetWeeklyChallenges</code></td><td>This week's challenges</td></tr>
             <tr><td class="highlight"><code>UpdateChallengeProgress</code></td><td>Increment counters</td></tr>
             <tr><td class="highlight"><code>ClaimChallengeReward</code></td><td>Grant challenge reward</td></tr>
-            <tr><td class="highlight"><code>GetSeasonPassStatus</code></td><td>Level, XP, rewards</td></tr>
-            <tr><td class="highlight"><code>ClaimSeasonPassReward</code></td><td>Claim free/premium reward</td></tr>
           </tbody>
         </table>
       </div>
@@ -3310,8 +3249,6 @@
             <tr><td class="highlight"><code>PiggyBankCoins</code></td><td>Integer</td><td><code>12500</code></td><td>CloudScript</td></tr>
             <tr><td class="highlight"><code>PiggyBankTier</code></td><td>String</td><td><code>"bronze"</code></td><td>CloudScript</td></tr>
             <tr><td class="highlight"><code>AdWatchData</code></td><td>JSON</td><td style="font-size:11px"><code>{"FreeTicket":{"claims":2}}</code></td><td>CloudScript</td></tr>
-            <tr><td class="highlight"><code>SeasonPassXP</code></td><td>Integer</td><td><code>1250</code></td><td>CloudScript</td></tr>
-            <tr><td class="highlight"><code>SeasonPassLevel</code></td><td>Integer</td><td><code>8</code></td><td>CloudScript</td></tr>
             <tr><td class="highlight"><code>ChallengeProgress</code></td><td>JSON</td><td>Daily/weekly counters</td><td>CloudScript</td></tr>
             <tr><td class="highlight"><code>LeaderboardRewards</code></td><td>JSON</td><td>Pending unclaimed</td><td>CloudScript</td></tr>
             <tr><td class="highlight"><code>WelcomeOfferStatus</code></td><td>JSON</td><td style="font-size:11px"><code>{"variant":"A","dismissed":false}</code></td><td>CloudScript</td></tr>
@@ -3337,7 +3274,6 @@
           <tbody>
             <tr><td class="highlight"><code>weekly_stars</code></td><td>Monday 00:00 UTC</td><td>Stars earned that week</td></tr>
             <tr><td class="highlight"><code>monthly_stars</code></td><td>1st of month 00:00 UTC</td><td>Stars earned that month</td></tr>
-            <tr><td class="highlight"><code>season_current_stars</code></td><td>Manual (6-week season)</td><td>Stars earned that season</td></tr>
           </tbody>
         </table>
       </div>
@@ -3702,7 +3638,6 @@
             <li>Themed sets ("La Familia," "Los Animales," "La Fiesta," "El Cielo") — completing a set grants gems</li>
             <li>Duplicates can be gifted to friends or recycled for coins</li>
             <li>Gallery screen with silhouettes for undiscovered cards</li>
-            <li>Season Pass premium track could include exclusive card variants (gold-bordered, animated)</li>
           </ul>
         </div>
 
@@ -3924,7 +3859,6 @@
             <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">Weekly</td><td style="padding:6px 10px;color:#ccc;">New daily/weekly challenges</td><td style="padding:6px 10px;color:var(--success);">Low (data config)</td></tr>
             <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">Bi-weekly</td><td style="padding:6px 10px;color:#ccc;">New daily deal rotations</td><td style="padding:6px 10px;color:var(--success);">Low (data config)</td></tr>
             <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">Monthly</td><td style="padding:6px 10px;color:#ccc;">15&ndash;30 new levels</td><td style="padding:6px 10px;color:var(--gold);">Medium</td></tr>
-            <tr style="border-bottom:1px solid #222;"><td style="padding:6px 10px;color:#ccc;">6 weeks</td><td style="padding:6px 10px;color:#ccc;">New Season Pass theme</td><td style="padding:6px 10px;color:var(--gold);">Medium</td></tr>
             <tr><td style="padding:6px 10px;color:#ccc;">Quarterly</td><td style="padding:6px 10px;color:#ccc;">New world or event type</td><td style="padding:6px 10px;color:var(--pink);">High</td></tr>
           </table>
         </div>
