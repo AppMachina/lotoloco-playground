@@ -4364,6 +4364,46 @@ function esRunSim() {
       }
     }
 
+    // --- Gem → ticket purchases (spenders buy more plays) ---
+    // Best deal: 10 tickets for 80 gems (8 gems/ticket)
+    // Players buy tickets when they've used all free ones and have gems to spare
+    if (p.iap && currentLevel <= 150) {
+      while (gems >= 80 && currentLevel <= 150) {
+        // Buy 10-ticket pack
+        gems -= 80; dayGemsOut += 80; totalGemsSpent += 80;
+        tickets += 10;
+        // Play those tickets immediately
+        let bought = 10;
+        while (bought > 0 && currentLevel <= 150) {
+          bought--;
+          tickets--;
+          dayTicketsUsed++;
+          totalTicketsUsed++;
+          const tier = esGetTierForLevel(currentLevel);
+          const failRate = p.failRates[tier.name] || 0;
+          const passRate = 1 - failRate;
+          const starBonus = Math.round(tier.avgStars) * tier.perStar;
+          const levelReward = tier.baseCoins + starBonus;
+          const earnedCoins = levelReward * passRate;
+          coins += earnedCoins; dayCoinsIn += earnedCoins;
+          totalCoinsEarned += earnedCoins;
+          if (p.piggy) piggyCoins += earnedCoins * 0.1;
+          const puCost = Math.round(p.powerupsPerLevel * p.powerupCost) * passRate;
+          if (coins >= puCost) { coins -= puCost; dayCoinsOut += puCost; totalCoinsSpent += puCost; }
+          const esCost = Math.round(p.extraSpinsPerLevel * p.extraSpinCost) * passRate;
+          if (coins >= esCost) { coins -= esCost; dayCoinsOut += esCost; totalCoinsSpent += esCost; }
+          dayLevelsFailed += failRate; totalLevelsFailed += failRate;
+          dayLevelsCompleted += passRate; totalLevelsCompleted += passRate;
+          levelProgress += passRate;
+          while (levelProgress >= 1 && currentLevel <= 150) {
+            levelProgress -= 1;
+            currentLevel++;
+            if (currentLevel > 150 && completionDay < 0) completionDay = day;
+          }
+        }
+      }
+    }
+
     // --- Piñata bank break check ---
     if (p.piggy) {
       const piggyTier = esGetPiggyTier(currentLevel);
