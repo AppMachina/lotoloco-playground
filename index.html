@@ -518,6 +518,22 @@
 
     <div class="changelog-entry latest">
       <div class="changelog-date">6 March 2026</div>
+      <div class="changelog-title">2x Speed Spin &amp; Auto-Spin Toggle (Rewarded Video)</div>
+      <div class="changelog-body">
+        <span class="changelog-tag feat">Feature</span>
+        <ul>
+          <li>New <strong>2x Speed Spin</strong> &mdash; doubles reel animation speed, unlocked via rewarded video ad, lasts for the entire level session</li>
+          <li>New <strong>Auto-Spin</strong> &mdash; automatically spins without tapping, unlocked via rewarded video ad, pauses when wild selection or power-up decisions are needed</li>
+          <li>Both features reset each level (must re-watch ads per session to encourage recurring ad views)</li>
+          <li>Added 2x Speed &amp; Auto-Spin toggle buttons to <strong>Gameplay wireframe</strong> HUD</li>
+          <li>Added functional 2x Speed &amp; Auto-Spin controls to <strong>Play the Game</strong> tab</li>
+          <li>Updated GDD, Economy Design, UI Wireframes, and Technical Architecture docs</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-date">6 March 2026</div>
       <div class="changelog-title">Club de Lotería VIP Subscription + Economy Simulator Fixes</div>
       <div class="changelog-body">
         <span class="changelog-tag feat">Feature</span> <span class="changelog-tag sim">Simulator</span> <span class="changelog-tag fix">Fix</span>
@@ -2857,6 +2873,18 @@
               <!-- Spin button -->
               <div style="width:80%; background:var(--pink); color:#fff; text-align:center; padding:10px; border-radius:10px; font-weight:800; font-size:12px; margin:6px auto; box-shadow:0 4px 12px rgba(233,30,99,0.4);">&#127922; SPIN</div>
 
+              <!-- 2x Speed & Auto-Spin toggles -->
+              <div style="width:85%; display:flex; gap:6px; margin:0 auto 6px; justify-content:center;">
+                <div style="flex:1; background:rgba(0,188,212,0.15); border:1px solid var(--turquoise); border-radius:6px; padding:4px 6px; text-align:center; cursor:pointer;">
+                  <div style="font-size:7px; color:var(--turquoise); font-weight:700;">&#127909; AD</div>
+                  <div style="font-size:9px; color:#ccc; font-weight:600;">&#9889; 2x Speed</div>
+                </div>
+                <div style="flex:1; background:rgba(0,188,212,0.15); border:1px solid var(--turquoise); border-radius:6px; padding:4px 6px; text-align:center; cursor:pointer;">
+                  <div style="font-size:7px; color:var(--turquoise); font-weight:700;">&#127909; AD</div>
+                  <div style="font-size:9px; color:#ccc; font-weight:600;">&#128260; Auto-Spin</div>
+                </div>
+              </div>
+
               <!-- Power-ups bar -->
               <div style="width:90%; display:flex; gap:4px; margin:0 auto 8px; justify-content:center;">
                 <div style="width:32px; height:32px; background:#2a2a3e; border:1px solid #444; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; position:relative;">&#127942;
@@ -3416,6 +3444,21 @@
         <select id="autoWild" onchange="state.autoWild=this.value==='true';updatePrompt()">
           <option value="true">Auto-pick best cell</option>
           <option value="false">Player chooses</option>
+        </select>
+      </div>
+      <hr class="divider">
+      <div class="control-group">
+        <label>&#9889; 2x Speed Spin</label>
+        <select id="speedMode" onchange="state.speedMode=this.value==='true';updatePrompt()">
+          <option value="false">Normal speed</option>
+          <option value="true">2x Speed (ad unlocked)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>&#128260; Auto-Spin</label>
+        <select id="autoSpin" onchange="toggleAutoSpin(this.value==='true')">
+          <option value="false">Manual spin</option>
+          <option value="true">Auto-Spin (ad unlocked)</option>
         </select>
       </div>
     </div>
@@ -3988,9 +4031,10 @@ const COLUMN_RANGES_6 = { 0:{min:1,max:15}, 1:{min:16,max:30}, 2:{min:31,max:45}
 const LOCO_LETTERS_5 = ['L','O','T','O','!'];
 const LOCO_LETTERS_6 = ['L','O','T','O','C','O'];
 
-const DEFAULTS = { boardSize:5, spinsGiven:15, jokerChance:0.05, superJokerChance:0.015, freeSpinChance:0.02, diablitChance:0, lockedCells:0, multiplierCells:0, boardBias:0.6, autoWild:true };
+const DEFAULTS = { boardSize:5, spinsGiven:15, jokerChance:0.05, superJokerChance:0.015, freeSpinChance:0.02, diablitChance:0, lockedCells:0, multiplierCells:0, boardBias:0.6, autoWild:true, speedMode:false, autoSpin:false };
 let state = { ...DEFAULTS };
 let game = null;
+let autoSpinInterval = null;
 
 const PRESETS = {
   tutorial: { boardSize:5, spinsGiven:15, jokerChance:0.05, superJokerChance:0.015, freeSpinChance:0.02, diablitChance:0, lockedCells:0, multiplierCells:0 },
@@ -4092,11 +4136,34 @@ function newGame() {
   sp.multi.forEach(idx => { game.multiCells.add(idx); });
   document.getElementById('log').innerHTML = '';
   document.getElementById('gameOver').classList.remove('show');
+  stopAutoSpin();
   renderBoard(); renderReels(); updateStats(); updatePrompt();
+  if (state.autoSpin) startAutoSpin();
 }
 
 function markCell(r,c) { if(game.marked[r][c]) return false; if(game.lockState[r][c]===1){game.lockState[r][c]=2;return false;} game.marked[r][c]=true; return true; }
 function isMultiplier(r,c) { return game.multiCells.has(r*game.size+c); }
+
+function toggleAutoSpin(enabled) {
+  state.autoSpin = enabled;
+  stopAutoSpin();
+  if (enabled && game && !game.over) startAutoSpin();
+  updatePrompt();
+}
+function startAutoSpin() {
+  if (autoSpinInterval) return;
+  const delay = state.speedMode ? 1200 : 2400;
+  autoSpinInterval = setInterval(() => {
+    if (!game || game.over || game.spinning || game.pendingWilds.length > 0 || game.spinsLeft <= 0) {
+      if (game && (game.over || game.spinsLeft <= 0)) stopAutoSpin();
+      return;
+    }
+    doSpin();
+  }, delay);
+}
+function stopAutoSpin() {
+  if (autoSpinInterval) { clearInterval(autoSpinInterval); autoSpinInterval = null; }
+}
 
 function doSpin() {
   if (game.spinning||game.over||game.spinsLeft<=0||game.pendingWilds.length>0) return;
@@ -4137,7 +4204,7 @@ function doSpin() {
           updatePrompt();
         },200);
       }
-    },300+col*350);
+    },state.speedMode?(150+col*175):(300+col*350));
   });
 }
 
@@ -4763,80 +4830,47 @@ function esRenderResults(r) {
 function esGeneratePrompt(r, findingsHtml) {
   const el = document.getElementById('esPromptBox');
   if (!el) return;
-  const fmt = n => Math.round(n).toLocaleString();
-  const pct = n => (n * 100).toFixed(1) + '%';
-
-  // Strip HTML from findings for plain text
-  const plainFindings = findingsHtml.map(f => f.replace(/<[^>]*>/g, '').trim());
-  // Filter to only warnings/issues (skip checkmarks and info)
-  const issues = plainFindings.filter(f => f.startsWith('\u26A0') || f.startsWith('\u2139'));
-  const warnings = plainFindings.filter(f => f.startsWith('\u26A0'));
-
-  // Build parameter summary
   const p = r.p;
-  const archetype = document.querySelector('.es-preset.active')?.textContent || 'Custom';
 
-  // Build specific fix instructions based on findings
-  const fixes = [];
+  // Baseline defaults (match HTML slider default values)
+  const baseline = {
+    login: true, ads: false, iap: false, piggy: true, leaderboard: false, failReward: false, starterBundle: false,
+    startTickets: 5, startCoins: 25000, startGems: 5,
+    regenHours: 2, maxTickets: 5, playHours: 10,
+    'failRates.Tutorial': 0, 'failRates.Easy': 0.10, 'failRates.Medium': 0.20, 'failRates.Hard': 0.30, 'failRates.Very Hard': 0.40, 'failRates.Expert': 0.50,
+    powerupsPerLevel: 1, powerupCost: 1750, extraSpinsPerLevel: 0.5, extraSpinCost: 1500,
+    adTicketsPerDay: 1.5, adCoinsPerDay: 3, adDoublePerDay: 1,
+    iapMonthlySpend: 0, failRewardPct: 0.25
+  };
 
-  if (r.completionDay > 0 && r.completionDay < 45) {
-    fixes.push(`- Progression is too fast (${r.completionDay} days to complete 150 levels). In getLevelConfig() in LotoLocoCloudScript.js, reduce base coin rewards for Tutorial/Easy tiers or increase fail rates for later tiers.`);
-  }
-  if (r.finalCoins > 300000) {
-    fixes.push(`- Coin inflation detected (${fmt(r.finalCoins)} coins at end). Reduce level coin rewards in getLevelConfig() or add stronger coin sinks (higher power-up costs, new cosmetic purchases in STORE_DESIGN.md).`);
-  }
-  if (r.finalCoins < 5000 && r.totalLevelsCompleted > 50) {
-    fixes.push(`- Economy too punishing (only ${fmt(r.finalCoins)} coins after ${r.totalLevelsCompleted} levels). Increase base coin rewards in getLevelConfig() for Medium/Hard/VeryHard tiers.`);
-  }
-  if (r.totalGemsEarned - r.totalIAPGems < 100 && r.snapshots.length >= 30) {
-    fixes.push(`- F2P gem income too low (${fmt(r.totalGemsEarned - r.totalIAPGems)} non-IAP gems over ${r.snapshots.length} days). Add gem rewards to daily login rewards, leaderboard prizes, or milestone achievements in the CloudScript handlers.`);
-  }
-  if (r.overallFailRate > 0.45) {
-    fixes.push(`- Fail rate too high (${pct(r.overallFailRate)}). In getLevelConfig(), increase positive symbol chances (jokerChance, superJokerChance) or reduce blocker chances for Hard/VeryHard/Expert tiers.`);
-  }
-  if (r.overallFailRate < 0.15) {
-    fixes.push(`- Fail rate too low (${pct(r.overallFailRate)}). In getLevelConfig(), reduce spins given or increase blocker chance for Medium+ tiers to create monetisation pressure.`);
-  }
-  if (r.totalPiggyBreaks === 0 && r.p.piggy && r.snapshots.length > 14) {
-    fixes.push(`- Piñata bank never broken. Reduce piñata break gem costs in the ES_PIGGY_TIERS / PiggyBankWidget.cs or increase F2P gem income.`);
-  }
-  if (r.avgDailyCoins > 20000) {
-    fixes.push(`- Daily coin income too high (${fmt(r.avgDailyCoins)}/day). Reduce level rewards in getLevelConfig() or increase power-up/extra-spin costs.`);
-  }
-  if (r.avgDailyCoins < 8000 && r.totalLevelsCompleted > 20) {
-    fixes.push(`- Daily coin income too low (${fmt(r.avgDailyCoins)}/day). Increase level rewards in getLevelConfig() or add bonus coin sources (daily challenges, streak bonuses).`);
-  }
-  if (r.finalPiggy > 20000) {
-    fixes.push(`- ${fmt(r.finalPiggy)} coins stuck in piñata bank. Make piñata break costs cheaper or add free piñata break rewards at world milestones.`);
+  // Flatten current params for comparison
+  const current = {
+    login: p.login, ads: p.ads, iap: p.iap, piggy: p.piggy, leaderboard: p.leaderboard, failReward: p.failReward, starterBundle: p.starterBundle,
+    startTickets: p.startTickets, startCoins: p.startCoins, startGems: p.startGems,
+    regenHours: p.regenHours, maxTickets: p.maxTickets, playHours: p.playHours,
+    'failRates.Tutorial': p.failRates.Tutorial, 'failRates.Easy': p.failRates.Easy, 'failRates.Medium': p.failRates.Medium, 'failRates.Hard': p.failRates.Hard, 'failRates.Very Hard': p.failRates['Very Hard'], 'failRates.Expert': p.failRates.Expert,
+    powerupsPerLevel: p.powerupsPerLevel, powerupCost: p.powerupCost, extraSpinsPerLevel: p.extraSpinsPerLevel, extraSpinCost: p.extraSpinCost,
+    adTicketsPerDay: p.adTicketsPerDay, adCoinsPerDay: p.adCoinsPerDay, adDoublePerDay: p.adDoublePerDay,
+    iapMonthlySpend: p.iapMonthlySpend, failRewardPct: p.failRewardPct
+  };
+
+  // Find only changed values
+  const diff = [];
+  for (const key in baseline) {
+    if (current[key] !== baseline[key]) {
+      const val = typeof current[key] === 'boolean' ? current[key] : (key.startsWith('failRates.') ? Math.round(current[key] * 100) + '%' : current[key]);
+      diff.push(`${key}: ${val}`);
+    }
   }
 
-  const prompt = `Update the LotoLoco economy based on the following simulation results.
+  if (diff.length === 0) {
+    el.textContent = 'No changes — all values match defaults.';
+    return;
+  }
 
-## Simulation Results (90-day)
-- Days to complete 150 levels: ${r.completionDay > 0 ? r.completionDay : '90+'}
-- Levels completed: ${r.totalLevelsCompleted} | Failed: ${r.totalLevelsFailed} | Fail rate: ${pct(r.overallFailRate)}
-- Total coins earned: ${fmt(r.totalCoinsEarned)} | spent: ${fmt(r.totalCoinsSpent)} | final balance: ${fmt(r.finalCoins)}
-- Total gems earned: ${fmt(r.totalGemsEarned)} | spent: ${fmt(r.totalGemsSpent)} | final balance: ${fmt(r.finalGems)}
-- Tickets used: ${fmt(r.totalTicketsUsed)}
-- Piñata bank breaks: ${r.totalPiggyBreaks} (recovered ${fmt(r.piggyCoinsRecovered)} coins)
-- Avg daily coin income (last 7d): ${fmt(r.avgDailyCoins)}
-- Avg daily tickets used (last 7d): ${r.avgDailyTickets.toFixed(1)}
+  const prompt = `Update the LotoLoco economy to match these values. Sync \`PlayFabCloudScript/LotoLocoCloudScript.js\` (getLevelConfig()), \`docs/ECONOMY_DESIGN.md\`, \`STORE_DESIGN.md\`, and \`docs/LEVEL_DESIGN.md\`.
 
-## Issues Found
-${fixes.length > 0 ? fixes.join('\n') : '- No issues found — economy is balanced.'}
-
-## Files to Update
-1. \`PlayFabCloudScript/LotoLocoCloudScript.js\` — getLevelConfig() function contains all level difficulty tuning (spins, symbol chances, board size) and reward values
-2. \`docs/ECONOMY_DESIGN.md\` — Economy design doc with pricing tables, reward schedules, and balance targets
-3. \`STORE_DESIGN.md\` — Store pricing, power-up costs, gem pack values, piñata bank tiers
-4. \`docs/LEVEL_DESIGN.md\` — Level difficulty curve, world progression
-
-## Rules
-- Maintain the 1 gem = 100 coins base ratio for power-up pricing (bulk purchases offer better rates by design)
-- All currency changes must go through CloudScript (server-authoritative)
-- Wild/positive symbol chance must ALWAYS exceed blocker chance
-- Target healthy ranges: coins/day 8K-20K, fail rate 15-45%, tickets/day 3-10
-- Update the design docs to match any code changes`;
+${diff.join('\n')}`;
 
   el.textContent = prompt;
 }
