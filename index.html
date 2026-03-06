@@ -3815,6 +3815,8 @@ function switchTab(name) {
   const isPlayground = name === 'playground';
   document.getElementById('log').style.display = isPlayground ? 'block' : 'none';
   document.querySelector('.prompt-section').style.display = isPlayground ? 'flex' : 'none';
+  // Auto-run economy simulator when tab is opened
+  if (name === 'econsim') esRunSim();
 }
 
 // ── Gantt detail toggle ──
